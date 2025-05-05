@@ -67,6 +67,7 @@ antsApplyTransforms \
   -r "$FUNC_N4" \
   -o "${OUT_FOLDER}/${WARPED_T1}" \
   -t "${OUT_FOLDER}/${OUT_PREFIX}1Warp.nii.gz" \
-  -t "${OUT_FOLDER}/${OUT_PREFIX}0GenericAffine.mat"
+  -t "${OUT_FOLDER}/${OUT_PREFIX}0GenericAffine.mat" \
+  -n Linear
 
 echo "Done! Output image: $WARPED_T1"
