@@ -6,7 +6,7 @@
 #SBATCH --ntasks=1                                              # Number of tasks per job
 #SBATCH --cpus-per-task=1                                       # CPUs per task
 #SBATCH --mem=400G                                              # Units [K|M|G|T]
-#SBATCH --array=14,23,36,48,101                                 # Array range --> specifies the range of participants
+#SBATCH --array=7,16,21,29,36                                   # Array range --> specifies the range of participants
 #SBATCH --mail-user=richard.lohr@gmx.de                         # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                              # Notify on start, finish, and failure
 
@@ -27,7 +27,7 @@ echo "Finished MATLAB preprocessing for subject $SLURM_ARRAY_TASK_ID"
 # Set paths (prod)
 BASE_DIR_OUT="/scratch/c7201319/SNORE_MR_out"
 SUBJ="$SLURM_ARRAY_TASK_ID"
-SCRIPT_DIR="/scratch/c7201319/SNORE_PreProc"
+SCRIPT_DIR="/scratch/c7201319/SNORE_Analysis/PreProc"
 
 # Define input/output paths
 INPUT_DIR="${BASE_DIR_OUT}/${SUBJ}/nifti_raw"
@@ -44,7 +44,9 @@ INPUT_DIR_FILT=$OUTPUT_DIR
 OUTPUT_DIR_FILT="${BASE_DIR_OUT}/${SUBJ}/filt_preproc_out"
 
 # fslmath uses sigma instead of hz per volume (docu on hz to sigma conversion in script)
-$SCRIPT_DIR/merge_highpass.sh "$INPUT_DIR_FILT" "$OUTPUT_DIR_FILT" 2.5 0.01
+echo "Running temporal filtering for subject $SUBJ..."
+bash "$SCRIPT_DIR/nc_FSL_process/merge_highpass.sh" "$INPUT_DIR_FILT" "$OUTPUT_DIR_FILT" 2.5 0.01
+echo "Temporal filtering done for $SUBJ... on $(hostname)"
 
 # Array task-specific work
 echo "Running task $SLURM_ARRAY_TASK_ID on $(hostname)"

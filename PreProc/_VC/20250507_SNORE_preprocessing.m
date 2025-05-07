@@ -21,6 +21,8 @@ function SNORE_preprocessing(participant_id)
     
     %Add paths of the helper functions
     %addpath(genpath(scriptpath)) %Add path of all scripts in this directory, including subdirs
+    %addpath([scriptpath '/nc_SPM_process']); % Folder with SPM functions
+    %addpath(scriptpath); % Main script folder
 %% Leo5 Setup: Add paths to Matlab (adjust for your paths)
     
     % Paths for Production
@@ -36,11 +38,9 @@ function SNORE_preprocessing(participant_id)
     % Add SPM to Leo5 environment
     spm_path = '/scratch/c7201319/spm12_dev';
     addpath(spm_path)
-    fprintf('SPM used: %d\n', spm_path);
 
     % Add scriptpath to Leo5
     addpath([scriptpath '/nc_SPM_process']);
-
     %% Set study parameters
     TR = 2.5; % Repetition time (s)
     nslices = 72;
@@ -61,6 +61,12 @@ function SNORE_preprocessing(participant_id)
     end
     cd(OutDir); % Move into nifti folder
 
+    % Output directory for coregistration
+    CoRegDir = fullfile(outputpath, num2str(participant_id), 'co_reg');
+    if ~exist(CoRegDir, 'dir')
+        mkdir(CoRegDir);
+    end
+
     %% Convert DICOM to NIfTI
     convertDicomDir2Nifti(archiveData, OutDir);
     convertDicomDir2Nifti(fieldMapDir, fieldMapDir);
@@ -72,10 +78,10 @@ function SNORE_preprocessing(participant_id)
     %load slice timing information from exact slice timing aquired from
     %json sidecar after running dcm2niix
     sliceTimingFile = load([scriptpath '/nc_SPM_process/SNORE_Night_slice_times.mat']);
-    silceTimingArray = sliceTimingFile.sliceTiming; %extract the array of the struct
+    silceTimingArray = sliceTimingFile.sliceTimes; %extract the array of the struct
     
     %run slice time correction
-    nc_SliceTimeCorr(filesSliceTiming, nslices, TR, silceTimingArray);
+    nc_SliceTimeCorr(filesSliceTiming, nslices, TR,silceTimingArray);
     %% Realign and unwarp
     filesRealign = cellstr(spm_select('ExtFPList', OutDir, '^a*'));
     nc_RealignUnwarp(filesRealign);

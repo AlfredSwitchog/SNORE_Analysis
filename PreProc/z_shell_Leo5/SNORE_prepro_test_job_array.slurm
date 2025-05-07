@@ -27,7 +27,7 @@ echo "Finished MATLAB preprocessing for subject $SLURM_ARRAY_TASK_ID"
 # Set paths (testing env)
 BASE_DIR_OUT="/scratch/c7201319/SNORE_MRI_data_dev_out"
 SUBJ="$SLURM_ARRAY_TASK_ID"
-SCRIPT_DIR="/scratch/c7201319/SNORE_PreProc"
+SCRIPT_DIR="/scratch/c7201319/SNORE_Analysis/PreProc"
 
 # Define input/output paths
 INPUT_DIR="${BASE_DIR_OUT}/${SUBJ}/nifti_raw"

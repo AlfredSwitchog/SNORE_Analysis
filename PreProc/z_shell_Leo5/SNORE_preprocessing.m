@@ -11,36 +11,39 @@ function SNORE_preprocessing(participant_id)
     % Clear everything except function parameters
     clearvars -except participant_id;
     fprintf('Processing participant %d\n', participant_id);
-    %% Local set-up: Add paths to Matlab (adjust for your paths)
 
-    % Paths for local testing environment:
-      %scriptpath = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
-      %generalpath = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev'; %Probs where the data is
-      %outputpath = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
-      %spm_path = '/Users/Richard/MatLAB/spm12_dev';
+    %% Set environment: 'local', 'leo5_prod', or 'leo5_test'
+    env = 'leo5_prod';  % <-- Change this to the appropriate environment
     
-    %Add paths of the helper functions
-    %addpath(genpath(scriptpath)) %Add path of all scripts in this directory, including subdirs
-    %addpath([scriptpath '/nc_SPM_process']); % Folder with SPM functions
-    %addpath(scriptpath); % Main script folder
-%% Leo5 Setup: Add paths to Matlab (adjust for your paths)
+    if strcmpi(env, 'local')
+        scriptpath  = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
+        generalpath = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev';
+        outputpath  = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
+        spm_path    = '/Users/Richard/MatLAB/spm12_dev';
     
-    % Paths for Production
-    %scriptpath = '/scratch/c7201319/SNORE_PreProc';
-    %generalpath = '/scratch/c7201319/SNORE_MR'; 
-    %outputpath = '/scratch/c7201319/SNORE_MR_out';
+    elseif strcmpi(env, 'leo5_prod')
+        scriptpath  = '/scratch/c7201319/SNORE_Analysis/PreProc';
+        generalpath = '/scratch/c7201319/SNORE_MR';
+        outputpath  = '/scratch/c7201319/SNORE_MR_out';
+        spm_path    = '/scratch/c7201319/spm12_dev';
+    
+    elseif strcmpi(env, 'leo5_test')
+        scriptpath  = '/scratch/c7201319/SNORE_Analysis/PreProc';
+        generalpath = '/scratch/c7201319/SNORE_MRI_data_dev';
+        outputpath  = '/scratch/c7201319/SNORE_MRI_data_dev_out';
+        spm_path    = '/scratch/c7201319/spm12_dev';
+    
+    else
+        error('Unknown environment "%s". Choose from: local, leo5_prod, leo5_test.', env);
+    end
 
-    % Paths for Leo5 testing environment:
-    scriptpath = '/scratch/c7201319/SNORE_PreProc';
-    generalpath = '/scratch/c7201319/SNORE_MRI_data_dev'; 
-    outputpath = '/scratch/c7201319/SNORE_MRI_data_dev_out';
-
-    % Add SPM to Leo5 environment
-    spm_path = '/scratch/c7201319/spm12_dev';
+    % Add SPM
     addpath(spm_path)
+    fprintf('SPM used: %s\n', spm_path);
 
-    % Add scriptpath to Leo5
+    % Add scriptpath
     addpath([scriptpath '/nc_SPM_process']);
+
     %% Set study parameters
     TR = 2.5; % Repetition time (s)
     nslices = 72;
@@ -52,26 +55,22 @@ function SNORE_preprocessing(participant_id)
     nightDir = fullfile(generalpath, num2str(participant_id), 'Night');
     T1_folder = fullfile(generalpath, num2str(participant_id), 'T1', 'MR t1_mprage_tra_p2_0.8mm_iso');
 
-    %% Create output directories if it doesn't exist
-    
-    % Output directories for pre-processing steps 
+    %% Structural: Create output directories if it doesn't exist and convert DICOM to Nifti
+    OutDir_T1 = fullfile(outputpath, num2str(participant_id), 'T1');
+    if ~exist(OutDir_T1, 'dir')
+        mkdir(OutDir_T1);
+    end
+    cd(OutDir_T1); % Move into nifti folder
+
+    convertDicomDir2Nifti(T1_folder, OutDir_T1);
+    %%  Functionals: Create output directories if it doesn't exist and convert DICOM to Nifti
     OutDir = fullfile(outputpath, num2str(participant_id), 'nifti_raw');
     if ~exist(OutDir, 'dir')
         mkdir(OutDir);
     end
     cd(OutDir); % Move into nifti folder
-
-    % Output directory for coregistration
-    CoRegDir = fullfile(outputpath, num2str(participant_id), 'co_reg');
-    if ~exist(CoRegDir, 'dir')
-        mkdir(CoRegDir);
-    end
-
-    %% Convert DICOM to NIfTI
+    
     convertDicomDir2Nifti(archiveData, OutDir);
-    convertDicomDir2Nifti(fieldMapDir, fieldMapDir);
-    convertDicomDir2Nifti(T1_folder, T1_folder);
-
     %% Slice Timing Correction
     filesSliceTiming = cellstr(spm_select('FPList', OutDir));
     
@@ -81,7 +80,7 @@ function SNORE_preprocessing(participant_id)
     silceTimingArray = sliceTimingFile.sliceTimes; %extract the array of the struct
     
     %run slice time correction
-    nc_SliceTimeCorr(filesSliceTiming, nslices, TR,silceTimingArray);
+    nc_SliceTimeCorr(filesSliceTiming, nslices, TR, silceTimingArray);
     %% Realign and unwarp
     filesRealign = cellstr(spm_select('ExtFPList', OutDir, '^a*'));
     nc_RealignUnwarp(filesRealign);
