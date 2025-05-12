@@ -33,7 +33,7 @@ N4BiasFieldCorrection -d 3 -i "$FUNC_MEAN_IMG" -o "${OUT_FOLDER}/${FUNC_BIAS_COR
 T1_N4="${OUT_FOLDER}/${T1_BIAS_CORRECTED}"
 FUNC_N4="${OUT_FOLDER}/${FUNC_BIAS_CORRECTED}"
 
-# === STEP 2: antsRegistration (rigid + affine) ===
+# === STEP 2: antsRegistration (rigid + affine + non-linear) T1 --> mean space ===
 echo "Running antsRegistration..."
 antsRegistration \
   --dimensionality 3 \

@@ -10,7 +10,7 @@
 function nc_segmentation(structfile, spm_path, biasfwmh)
 
 if nargin<3
-    biasfwmh=60; % Spm default but Martina (Switch Task) and Daniel Huber proposed 30 or even 20 
+    biasfwmh=60; % Spm default but Martina (Switch Task) and Daniel Huber proposed 30 or even 20 (SNORE: Use biasfwmh = 30) 
 end
 
 matlabbatch{1}.spm.spatial.preproc.channel.vols = {structfile};
