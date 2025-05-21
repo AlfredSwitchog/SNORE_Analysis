@@ -1,0 +1,16 @@
+Loading fsl/6.0.6.5
+  Loading requirement: matlab/R2023a
+Processing folder: /scratch/c7201319/SNORE_MR_out/7/filt_preproc_out
+Found file: /scratch/c7201319/SNORE_MR_out/7/filt_preproc_out/filtered_s3uaMFAN99SC020724.nii.gz
+Finished splitting /scratch/c7201319/SNORE_MR_out/7/filt_preproc_out/filtered_s3uaMFAN99SC020724.nii.gz
+Processing folder: /scratch/c7201319/SNORE_MR_out/16/filt_preproc_out
+Found file: /scratch/c7201319/SNORE_MR_out/16/filt_preproc_out/filtered_s3uaMFCR00TS031024.nii.gz
+Finished splitting /scratch/c7201319/SNORE_MR_out/16/filt_preproc_out/filtered_s3uaMFCR00TS031024.nii.gz
+Processing folder: /scratch/c7201319/SNORE_MR_out/21/filt_preproc_out
+Found file: /scratch/c7201319/SNORE_MR_out/21/filt_preproc_out/filtered_s3uaMFSI02SO171024.nii.gz
+Finished splitting /scratch/c7201319/SNORE_MR_out/21/filt_preproc_out/filtered_s3uaMFSI02SO171024.nii.gz
+Processing folder: /scratch/c7201319/SNORE_MR_out/29/filt_preproc_out
+Found file: /scratch/c7201319/SNORE_MR_out/29/filt_preproc_out/filtered_s3uaMFHE97CF261124.nii.gz
+Finished splitting /scratch/c7201319/SNORE_MR_out/29/filt_preproc_out/filtered_s3uaMFHE97CF261124.nii.gz
+Processing folder: /scratch/c7201319/SNORE_MR_out/36/filt_preproc_out
+No filtered NIfTI file found in /scratch/c7201319/SNORE_MR_out/36/filt_preproc_out
