@@ -65,5 +65,5 @@ end
 % matlabbatch{1}.spm.spatial.preproc.warp.write = [1 0]; --> Inverse
 % matlabbatch{1}.spm.spatial.preproc.warp.write = [0 1]; --> Forward
 % matlabbatch{1}.spm.spatial.preproc.warp.write = [1 1]; --> Inverse +
-% Forward (needed for normalizing to MNI space on the individual level)
+% Forward (needed for normalizing to MNI space on the individual level) 
 
