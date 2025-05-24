@@ -6,3 +6,7 @@
 
 # Ignore system files
 .DS_Store
+
+# Ignore error logs and output files from Slurm
+*.out
+*.err

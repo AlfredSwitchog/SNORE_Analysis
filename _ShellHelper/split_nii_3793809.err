@@ -1,5 +1,0 @@
-/usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/share/fsl/bin/fslsplit: line 2: 2851414 Killed                  /usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/bin/fslsplit "$@"
-/usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/share/fsl/bin/fslsplit: line 2: 2852305 Killed                  /usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/bin/fslsplit "$@"
-/usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/share/fsl/bin/fslsplit: line 2: 2852597 Killed                  /usr/site/hpc/x86_64/leo5/leo5/fsl/6.0.6.5/fsl/bin/fslsplit "$@"
-find: '/scratch/c7201319/SNORE_MR_out/36/filt_preproc_out': No such file or directory
-slurmstepd-n006: error: Detected 3 oom-kill event(s) in StepId=3793809.batch. Some of your processes may have been killed by the cgroup out-of-memory handler.
