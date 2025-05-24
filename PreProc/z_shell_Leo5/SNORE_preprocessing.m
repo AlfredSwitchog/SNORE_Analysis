@@ -23,7 +23,7 @@ function SNORE_preprocessing(participant_id)
     
     elseif strcmpi(env, 'leo5_prod')
         scriptpath  = '/scratch/c7201319/SNORE_Analysis/PreProc';
-        generalpath = '/scratch/c7201319/SNORE_MR';
+        generalpath = '/scratch/c7201319/SNORE_MRI';
         outputpath  = '/scratch/c7201319/SNORE_MR_out';
         spm_path    = '/scratch/c7201319/spm12_dev';
     
