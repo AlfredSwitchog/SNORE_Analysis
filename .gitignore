@@ -10,3 +10,4 @@
 # Ignore error logs and output files from Slurm
 *.out
 *.err
+.DS_Store
