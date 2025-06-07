@@ -3,13 +3,14 @@
 #SBATCH --output=mean_func_%A_%a.out
 #SBATCH --error=mean_func_%A_%a.err
 #SBATCH --time=00:30:00
-#SBATCH --mem=1G
+#SBATCH --mem=4G
 #SBATCH --cpus-per-task=1
-#SBATCH --array=1-66,101
+#SBATCH --array=1
 #SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
 
 # Load FSL
+module purge
 module load fsl
 
 # Base participant ID from array index
