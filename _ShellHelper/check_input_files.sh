@@ -8,8 +8,8 @@ if [ $# -eq 0 ]; then
 fi
 
 for participant in "$@"; do
-    dir="/scratch/c7201319/SNORE_MRI/${participant}/Night/MR ep2d_bold_samba_2mm_sleep"
-    #dir="/scratch/c7201319/SNORE_MR_out/${participant}/preproc_out"
+    #dir="/scratch/c7201319/SNORE_MRI/${participant}/Night/MR ep2d_bold_samba_2mm_sleep"
+    dir="/scratch/c7201319/SNORE_MR_out/${participant}/preproc_out"
     
     if [ -d "$dir" ]; then
         count=$(find "$dir" -type f | wc -l)

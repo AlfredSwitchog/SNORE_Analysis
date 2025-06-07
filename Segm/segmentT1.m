@@ -14,7 +14,7 @@ function segmentT1(participant_id)
         spm_path    = '/scratch/c7201319/spm12_dev';
         scriptpath = '/scratch/c7201319/SNORE_Analysis/';
         structFileBase = '/scratch/c7201319/SNORE_MRI/';
-        structFileEnding = 'T1/MR t1_mprage_tra_p2_0.8mm_iso';
+        structFileEnding = '/T1/MR t1_mprage_tra_p2_0.8mm_iso';
         structFileBase_out = '/scratch/c7201319/SNORE_MR_out/';
         structFileEnding_out = '/T1';
 
@@ -24,6 +24,7 @@ function segmentT1(participant_id)
 
     % add scripts to matlab path
     addpath(genpath(scriptpath))
+    addpath(spm_path)
     
     % select T1 directory
     T1dir = [structFileBase, num2str(participant_id), structFileEnding]; 
