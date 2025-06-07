@@ -5,8 +5,8 @@
 #SBATCH --time=00:10:00                    # Time limit (hh:mm:ss)
 #SBATCH --ntasks=1                                                      # Number of tasks per job
 #SBATCH --cpus-per-task=1                 # Number of CPU cores per task
-#SBATCH --mem=3G                           # Memory per node
-#SBATCH --array=30                        # Participant ID (use array for multiple)
+#SBATCH --mem=4G                           # Memory per node
+#SBATCH --array=36,42      # Participant ID (use array for multiple)
 #SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
 
