@@ -16,13 +16,18 @@ T1_IMG=$(find "$T1_DIR" -maxdepth 1 -name "T1_*.nii" | head -n 1)
 C3_MASK=$(find "$T1_DIR" -maxdepth 1 -name "c3*.nii" | head -n 1)
 FUNC_MEAN_IMG="${FUNC_MEAN_DIR}/mean_func.nii.gz"
 
+# === Extract participant code from T1 filename
+BASENAME=$(basename "$T1_IMG")
+PARTICIPANT_CODE=$(echo "$BASENAME" | sed -n 's/T1_MF\([A-Z0-9]\+\)-.*/\1/p')
+
 # === Output naming ===
-T1_BIAS_CORRECTED="T1_n4.nii"
-FUNC_BIAS_CORRECTED="meanfunc_n4.nii"
+T1_BIAS_CORRECTED="T1_n4_${PARTICIPANT_CODE}.nii"
+FUNC_BIAS_CORRECTED="meanfunc_n4_${PARTICIPANT_CODE}.nii"
 T1_N4="${T1_DIR}/${T1_BIAS_CORRECTED}"
 FUNC_N4="${T1_DIR}/${FUNC_BIAS_CORRECTED}"
-OUT_PREFIX="T1_to_func_"
-WARPED_C3="${T1_DIR}/c3_in_func_space.nii.gz"
+OUT_PREFIX="T1_to_func_${PARTICIPANT_CODE}_"
+WARPED_C3="${T1_DIR}/c3_in_func_space_${PARTICIPANT_CODE}.nii.gz"
+
 
 # === Check inputs ===
 if [[ ! -f "$T1_IMG" ]]; then
@@ -40,10 +45,12 @@ if [[ ! -f "$FUNC_MEAN_IMG" ]]; then
   exit 1
 fi
 
+# === Bias Correction for EPI and T1 ===
 echo "Running N4BiasFieldCorrection on T1 and functional mean..."
 N4BiasFieldCorrection -d 3 -i "$T1_IMG" -o "$T1_N4"
 N4BiasFieldCorrection -d 3 -i "$FUNC_MEAN_IMG" -o "$FUNC_N4"
 
+# === registration T1 --> EPI ===
 echo "Running antsRegistration..."
 antsRegistration \
   --dimensionality 3 \
@@ -77,3 +84,12 @@ antsApplyTransforms \
   -n Linear
 
 echo "Done. Transformed CSF mask saved to: $WARPED_C3"
+
+# === Binarize the transformed CSF mask ===
+BINARIZED_C3="${T1_DIR}/c3_in_func_space_bin_${PARTICIPANT_CODE}.nii.gz"
+
+echo "Binarizing CSF mask with threshold 0.5..."
+fslmaths "$WARPED_C3" -thr 0.5 -bin "$BINARIZED_C3"
+
+echo "Done. Binarized CSF mask saved to: $BINARIZED_C3"
+
