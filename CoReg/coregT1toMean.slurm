@@ -24,7 +24,7 @@ PARTICIPANT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}"
 # Check if folder exists
 if [[ -d "$PARTICIPANT_DIR" ]]; then
   echo "Running participant $PARTICIPANT_ID"
-  ./coreg_T1_to_func.sh "$PARTICIPANT_DIR"
+  ./coregT1toMean.sh "$PARTICIPANT_DIR"
 else
   echo "Directory not found: $PARTICIPANT_DIR"
 fi
