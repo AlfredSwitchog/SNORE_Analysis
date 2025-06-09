@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=coreg_T1_to_func_array
-#SBATCH --output=coreg_T1_to_func_array%A_%a.out
-#SBATCH --error=coreg_T1_to_func_arry%A_%a.err
-#SBATCH --time=00:15:00
-#SBATCH --mem=10G
+#SBATCH --output=_errors_outputs/coreg_T1_to_func_array%A_%a.out
+#SBATCH --error=_errors_outputs/coreg_T1_to_func_arry%A_%a.err
+#SBATCH --time=00:10:00
+#SBATCH --mem=1G
 #SBATCH --cpus-per-task=1
-#SBATCH --array=2
+#SBATCH --array=1,3-66,101
 #SBATCH --mail-user=richard.lohr@gmx.de                                 
 #SBATCH --mail-type=BEGIN,END,FAIL                                      
 
