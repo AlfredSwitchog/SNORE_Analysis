@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=coreg_T1_to_func_array
-#SBATCH --output=mean_func_%A_%a.out
-#SBATCH --error=mean_func_%A_%a.err
+#SBATCH --output=coreg_T1_to_func_array%A_%a.out
+#SBATCH --error=coreg_T1_to_func_arry%A_%a.err
 #SBATCH --time=00:15:00
 #SBATCH --mem=10G
 #SBATCH --cpus-per-task=1
