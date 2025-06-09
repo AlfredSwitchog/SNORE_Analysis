@@ -15,12 +15,11 @@ module load matlab/R2023a
 module load fsl
 module load ants
 
-# Base path where participant folders are located
-BASE_DIR="/scratch/c7201319/SNORE_MR_out"
-
-# Get the participant number from the array index
+# Base participant ID from array index
 PARTICIPANT_ID=${SLURM_ARRAY_TASK_ID}
-PARTICIPANT_DIR="${BASE_DIR}/${PARTICIPANT_ID}"
+
+# Construct Path to the Input folder
+PARTICIPANT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}"
 
 # Check if folder exists
 if [[ -d "$PARTICIPANT_DIR" ]]; then
