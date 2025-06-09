@@ -9,7 +9,7 @@ fi
 
 PARTICIPANT_DIR="$1"
 T1_DIR="${PARTICIPANT_DIR}/T1"
-FUNC_MEAN_DIR="${PARTICIPANT_DIR}/func_mean"
+FUNC_MEAN_DIR="${PARTICIPANT_DIR}/func_mean_ua"
 
 # === Create CSF mask output directory ===
 CSF_MASK_DIR="${PARTICIPANT_DIR}/CSF_mask"
@@ -23,26 +23,24 @@ mkdir -p "$T1_TO_FUNC"
 [[ ! -d "$CSF_MASK_DIR" || ! -d "$T1_TO_FUNC" ]] && { echo "Error: Could not create output directories."; exit 1; }
 
 # === Find input files ===
-T1_IMG=$(find "$T1_DIR" -maxdepth 1 -name "T1_*.nii" | head -n 1)
+T1_N4=$(find "$T1_DIR" -maxdepth 1 -name "T1_n4*.nii" | head -n 1)
 C3_MASK=$(find "$T1_DIR" -maxdepth 1 -name "c3*.nii" | head -n 1)
-FUNC_MEAN_IMG="${FUNC_MEAN_DIR}/mean_func.nii.gz"
+FUNC_MEAN_IMG=$(find "$FUNC_MEAN_DIR" -maxdepth 1 -type f -name "meanua*.nii" | head -n 1)
 
 # === Extract participant code from T1 filename
-BASENAME=$(basename "$T1_IMG")
-PARTICIPANT_CODE=$(basename "$T1_IMG" | cut -d'_' -f2 | cut -d'-' -f1 | cut -c3-)
+BASENAME=$(basename "$T1_N4")
+PARTICIPANT_CODE=$(basename "$T1_N4" | cut -d'_' -f2 | cut -d'-' -f1 | cut -c3-)
 echo "Extracted participant code: $PARTICIPANT_CODE" 
 
 # === Output naming ===
-T1_BIAS_CORRECTED="T1_n4_${PARTICIPANT_CODE}.nii"
-FUNC_BIAS_CORRECTED="meanfunc_n4_${PARTICIPANT_CODE}.nii"
-T1_N4="${T1_DIR}/${T1_BIAS_CORRECTED}"
+FUNC_BIAS_CORRECTED="meanua_n4_${PARTICIPANT_CODE}.nii"
 FUNC_N4="${FUNC_MEAN_DIR}/${FUNC_BIAS_CORRECTED}"
 OUT_PREFIX="T1_to_func_${PARTICIPANT_CODE}_"
 WARPED_C3="${CSF_MASK_DIR}/c3_in_func_space_${PARTICIPANT_CODE}.nii.gz"
 BINARIZED_C3="${CSF_MASK_DIR}/c3_in_func_space_bin_${PARTICIPANT_CODE}.nii.gz"
 
 # === Check inputs ===
-if [[ ! -f "$T1_IMG" ]]; then
+if [[ ! -f "$T1_N4" ]]; then
   echo "Error: T1 image not found in $T1_DIR"
   exit 1
 fi
@@ -59,7 +57,6 @@ fi
 
 # === Bias Correction for EPI and T1 ===
 echo "Running N4BiasFieldCorrection on T1 and functional mean..."
-N4BiasFieldCorrection -d 3 -i "$T1_IMG" -o "$T1_N4"
 N4BiasFieldCorrection -d 3 -i "$FUNC_MEAN_IMG" -o "$FUNC_N4"
 
 # === registration T1 --> EPI (riggid + affine) ===
