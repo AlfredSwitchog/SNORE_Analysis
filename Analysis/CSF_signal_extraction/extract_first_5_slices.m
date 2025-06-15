@@ -9,9 +9,9 @@
         spm_path    = '/Users/Richard/MatLAB/spm12_dev';
     
     elseif strcmpi(env, 'leo5_prod')
-        scriptpath  = '/scratch/c7201319/SNORE_Analysis/PreProc';
+        scriptpath  = '/scratch/c7201319/SNORE_Analysis/Analysis/CSF_signal_extraction';
         main_dir = '/scratch/c7201319/SNORE_MR_out';
-        output_dir  = '/scratch/c7201319//SNORE_Analysis/Data';
+        output_dir  = '/scratch/c7201319/SNORE_Analysis/Data';
         spm_path    = '/scratch/c7201319/spm12_dev';
     
     else
@@ -30,6 +30,13 @@ else
     participant_ids = {dirs([dirs.isdir] & ~startsWith({dirs.name}, '.')).name};
 end
 
+%% Add SPM and Script to Path
+% Add SPM
+addpath(spm_path)
+fprintf('SPM used: %s\n', spm_path);
+
+% Add scriptpath
+addpath([scriptpath]);
 
 %% === Extract signal for the first n Slices ===
 
