@@ -78,11 +78,14 @@ for i = 1:length(participant_ids)
         
         % === Identify and unzip CSF mask file if necessary ===
         mask_folder = fullfile(participant_path, 'CSF_mask');
-        mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii'));
+        mask_file = dir(fullfile(mask_folder, '*pruned*.nii'));
         
         if isempty(mask_file)
             % Check for .nii.gz
-            gz_mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii.gz'));
+            gz_mask_file = dir(fullfile(mask_folder, '*pruned*.nii.gz'));
+            % Filter out files that start with a dot
+            gz_mask_file = gz_mask_file(~startsWith({gz_mask_file.name}, '._'));
+
             
             if isempty(gz_mask_file)
                 fprintf('Skipping participant %s: No CSF mask file found.\n', participant_id);
@@ -94,7 +97,7 @@ for i = 1:length(participant_ids)
             gunzip(fullfile(mask_folder, gz_mask_file(1).name));
             
             % Retry finding the .nii file
-            mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii'));
+            mask_file = dir(fullfile(mask_folder, '*pruned*.nii'));
             
             if isempty(mask_file)
                 fprintf('Participant %s: Unzipped CSF mask file not found.\n', participant_id);
@@ -131,7 +134,6 @@ for i = 1:length(participant_ids)
                 volume_data = spm_read_vols(V_img(t));
                 slice_data = volume_data(:,:,slice_idx);
                 voxel_values = slice_data(csf_voxel_idx);
-                voxel_values(voxel_values == 0) = NaN;
                 csf_signals(:,t) = voxel_values;
             end
 
