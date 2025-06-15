@@ -1,29 +1,11 @@
 %% === Configuration ===
-% Set environment: 'local' or 'leo5_prod'
-    env = 'leo5_prod';  % <-- Change this to the appropriate environment
-    
-    if strcmpi(env, 'local')
-        scriptpath  = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
-        main_dir = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
-        output_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
-        spm_path    = '/Users/Richard/MatLAB/spm12_dev';
-    
-    elseif strcmpi(env, 'leo5_prod')
-        scriptpath  = '/scratch/c7201319/SNORE_Analysis/PreProc';
-        main_dir = '/scratch/c7201319/SNORE_MR_out';
-        output_dir  = '/scratch/c7201319//SNORE_Analysis/Data';
-        spm_path    = '/scratch/c7201319/spm12_dev';
-    
-    else
-        error('Unknown environment "%s". Choose from: local, leo5_prod.', env);
-    end
-
-% Testmode toggle and number of slice that are extracted    
+main_dir = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
+output_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data'
 test_mode = true;  % Set to false to run all participants
 num_slices = 20;
 
 if test_mode
-    participant_ids = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10'}; % select individual participant dirs
+    participant_ids = {'7'};  % Only process participant 7
 else
     % Get all subfolders (excluding hidden/system dirs)
     dirs = dir(main_dir);
@@ -100,10 +82,5 @@ for i = 1:length(participant_ids)
 end
 
 %% ====== Save data ========
-if ~exist(output_dir, 'dir')
-    mkdir(output_dir);
-end
-
-save(fullfile(output_dir, 'csf_first_20_slices.mat'), 'csf_dataset');
 
 
