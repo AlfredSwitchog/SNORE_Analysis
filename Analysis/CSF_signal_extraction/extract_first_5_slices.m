@@ -48,20 +48,62 @@ for i = 1:length(participant_ids)
     participant_path = fullfile(main_dir, participant_id);
 
     try
-        % === Identify functional and mask files ===
+        % === Identify and unzip functional file if necessary ===
         func_folder = fullfile(participant_path, 'func_merged');
         func_file = dir(fullfile(func_folder, 'merged_*.nii'));
-
+        
+        if isempty(func_file)
+            % Check for .nii.gz
+            gz_func_file = dir(fullfile(func_folder, 'merged_*.nii.gz'));
+            
+            if isempty(gz_func_file)
+                fprintf('Skipping participant %s: No functional file found.\n', participant_id);
+                continue;
+            end
+            
+            % Unzip .nii.gz
+            fprintf('Participant %s: Unzipping functional file %s...\n', participant_id, gz_func_file(1).name);
+            gunzip(fullfile(func_folder, gz_func_file(1).name));  % Unzips in place
+            
+            % Retry finding the .nii file
+            func_file = dir(fullfile(func_folder, 'merged_*.nii'));
+            
+            if isempty(func_file)
+                fprintf('Participant %s: Unzipped functional file not found.\n', participant_id);
+                continue;
+            end
+        end
+        
+        img_file = fullfile(func_folder, func_file(1).name);
+        
+        % === Identify and unzip CSF mask file if necessary ===
         mask_folder = fullfile(participant_path, 'CSF_mask');
         mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii'));
-
-        if isempty(func_file) || isempty(mask_file)
-            fprintf('Skipping participant %s: Missing mask or functional file.\n', participant_id);
-            continue;
+        
+        if isempty(mask_file)
+            % Check for .nii.gz
+            gz_mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii.gz'));
+            
+            if isempty(gz_mask_file)
+                fprintf('Skipping participant %s: No CSF mask file found.\n', participant_id);
+                continue;
+            end
+            
+            % Unzip .nii.gz
+            fprintf('Participant %s: Unzipping CSF mask file %s...\n', participant_id, gz_mask_file(1).name);
+            gunzip(fullfile(mask_folder, gz_mask_file(1).name));
+            
+            % Retry finding the .nii file
+            mask_file = dir(fullfile(mask_folder, 'c3_pruned*.nii'));
+            
+            if isempty(mask_file)
+                fprintf('Participant %s: Unzipped CSF mask file not found.\n', participant_id);
+                continue;
+            end
         end
-
-        img_file = fullfile(func_folder, func_file(1).name);
+        
         mask_file_path = fullfile(mask_folder, mask_file(1).name);
+
 
         % === Load image and mask ===
         V_img = spm_vol(img_file);
