@@ -1,43 +1,30 @@
+% function extract_csf_signals(participant_id)
+% Extract CSF signal from the bottom slices for one participant
 %% === Configuration ===
-% Set environment: 'local' or 'leo5_prod'
-    env = 'leo5_prod';  % <-- Change this to the appropriate environment
-    
-    if strcmpi(env, 'local')
-        scriptpath  = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
-        main_dir = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
-        output_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
-        spm_path    = '/Users/Richard/MatLAB/spm12_dev';
-    
-    elseif strcmpi(env, 'leo5_prod')
-        scriptpath  = '/scratch/c7201319/SNORE_Analysis/Analysis/CSF_signal_extraction';
-        main_dir = '/scratch/c7201319/SNORE_MR_out';
-        output_dir  = '/scratch/c7201319/SNORE_Analysis/Data';
-        spm_path    = '/scratch/c7201319/spm12_dev';
-    
-    else
-        error('Unknown environment "%s". Choose from: local, leo5_prod.', env);
-    end
-
-% Testmode toggle and number of slice that are extracted    
-test_mode = true;  % Set to false to run all participants
+participant_id = '1';
+env = 'local';  % change to 'local' if testing locally
 num_slices = 20;
 
-if test_mode
-    participant_ids = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '10'}; % select individual participant dirs
-else
-    % Get all subfolders (excluding hidden/system dirs)
-    dirs = dir(main_dir);
-    participant_ids = {dirs([dirs.isdir] & ~startsWith({dirs.name}, '.')).name};
+switch lower(env)
+    case 'local'
+        main_dir   = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
+        spm_path   = '/Users/Richard/MatLAB/spm12_dev';
+    case 'leo5_prod'
+        main_dir   = '/scratch/c7201319/SNORE_MR_out';
+        spm_path   = '/scratch/c7201319/spm12_dev';
+    otherwise
+        error('Unknown environment "%s".', env);
 end
 
-%% Add SPM and Script to Path
-% Add SPM
-addpath(spm_path)
-fprintf('SPM used: %s\n', spm_path);
+addpath(spm_path);
+fprintf('Using SPM from: %s\n', spm_path);
 
-% Add scriptpath
-addpath([scriptpath]);
+participant_path = fullfile(main_dir, participant_id);
+output_dir = fullfile(participant_path, 'CSF_raw_signal');
 
+if ~exist(output_dir, 'dir')
+    mkdir(output_dir);
+end
 %% === Extract signal for the first n Slices ===
 
 % === Initialize result structure ===
