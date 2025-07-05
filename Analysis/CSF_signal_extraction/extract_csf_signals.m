@@ -23,7 +23,7 @@ addpath(spm_path);
 fprintf('Using SPM from: %s\n', spm_path);
 
 participant_path = fullfile(main_dir, participant_id);
-output_dir = fullfile(participant_path, 'CSF_raw_signal');
+output_dir = '/scratch/c7201319/SNORE_Analysis/Data';
 
 %% === Extract signal for the first n Slices ===
 
