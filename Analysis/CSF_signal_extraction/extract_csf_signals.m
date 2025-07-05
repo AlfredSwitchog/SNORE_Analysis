@@ -12,9 +12,11 @@ switch lower(env)
     case 'local'
         main_dir   = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
         spm_path   = '/Users/Richard/MatLAB/spm12_dev';
+        output_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
     case 'leo5_prod'
         main_dir   = '/scratch/c7201319/SNORE_MR_out';
         spm_path   = '/scratch/c7201319/spm12_dev';
+        output_dir = '/scratch/c7201319/SNORE_Analysis/Data';
     otherwise
         error('Unknown environment "%s".', env);
 end
@@ -23,7 +25,7 @@ addpath(spm_path);
 fprintf('Using SPM from: %s\n', spm_path);
 
 participant_path = fullfile(main_dir, participant_id);
-output_dir = '/scratch/c7201319/SNORE_Analysis/Data';
+
 
 %% === Extract signal for the first n Slices ===
 
