@@ -5,7 +5,7 @@ if isnumeric(participant_id)
     participant_id = num2str(participant_id);
 end
 %% === Configuration ===
-env = 'local';  % change to 'local' if testing locally
+env = 'leo5_prod';  % change to 'local' if testing locally
 num_slices = 20;
 
 switch lower(env)
