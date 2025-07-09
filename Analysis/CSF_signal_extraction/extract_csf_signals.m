@@ -48,7 +48,10 @@ try
 
     %% === Load CSF mask ===
     mask_folder = fullfile(participant_path, 'CSF_mask');
-    mask_file = dir(fullfile(mask_folder, '*pruned*.nii'));
+    all_files = dir(fullfile(mask_folder, '*pruned*.nii'));
+    % Filter out files that start with '.' --> necessary bc macOS creates
+    % metadat files (anoying)
+    mask_file = all_files(~startsWith({all_files.name}, '.'));
 
     if isempty(mask_file)
         gz_mask_file = dir(fullfile(mask_folder, '*pruned*.nii.gz'));
@@ -64,7 +67,9 @@ try
     mask_file_path = fullfile(mask_folder, mask_file(1).name);
 
     %% === Read volumes ===
+    disp(['Trying to read: ', img_file])
     V_img = spm_vol(img_file);
+    disp(['Trying to read: ', mask_file_path])
     V_mask = spm_vol(mask_file_path);
     mask_data = spm_read_vols(V_mask);
     n_timepoints = numel(V_img);
