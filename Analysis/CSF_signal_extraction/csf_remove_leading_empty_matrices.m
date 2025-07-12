@@ -18,6 +18,6 @@ end
 
 %% Save combined data
 output_folder = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev/SNORE_CSF_Merged';
-output_path = fullfile(output_folder, 'all_csf_data_trimmed.mat');
+output_path = fullfile(output_folder, 'csf_trimmed.mat');
 save(output_path, 'all_csf_data', '-v7.3');  % v7.3 handles large files
 

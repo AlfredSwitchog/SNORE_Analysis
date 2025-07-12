@@ -23,5 +23,5 @@ end
 
 %% Save combined data
 output_folder = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev/SNORE_CSF_Merged';
-output_path = fullfile(output_folder, 'all_csf_data_mean_per_slice_pre_subject.mat');
+output_path = fullfile(output_folder, 'csf_mean_per_slice_pre_subject.mat');
 save(output_path, 'averaged_csf_data', '-v7.3');  % v7.3 handles large files
