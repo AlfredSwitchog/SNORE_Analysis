@@ -20,7 +20,7 @@ module load fsl
 
 # === MATLAB SPM (realign, slice time, smooth) ===
 echo "Starting MATLAB preprocessing for subject $SLURM_ARRAY_TASK_ID"
-matlab -nodisplay -nosplash -r "SNORE_preprocessing($SLURM_ARRAY_TASK_ID); exit;"
+matlab -nodisplay -nosplash -r "SNORE _preprocessing($SLURM_ARRAY_TASK_ID); exit;"
 echo "Finished MATLAB preprocessing for subject $SLURM_ARRAY_TASK_ID"
 
 # === FSL skull stripping ===
