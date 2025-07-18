@@ -1,20 +1,20 @@
 % --- Settings ---
-merged_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/2/filt_preproc_out/filtered_s3uaMFRO01GG010724.nii';     % Your 4D merged data
-filtered_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/2/filt_preproc_out/filtered_s3uaMFRO01GG010724.nii';     % Your 4D filtered data
+merged_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_s3uaMFAN99SC020724.nii';     % Your 4D merged data
+filtered_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_s3uaMFAN99SC020724.nii';     % Your 4D filtered data
 TR = 2.5;
 
 % --- Load 4D data ---
-V_m = spm_vol(merged_file);
-Y_m = spm_read_vols(V_m);  % Y: [X, Y, Z, Time]
+V_orig = spm_vol(merged_file);
+Y_orig = spm_read_vols(V_orig);  % Y: [X, Y, Z, Time]
 
-V_f = spm_vol(filtered_file);
-Y_f = spm_read_vols(V_f);  % Y: [X, Y, Z, Time]
+V_filt = spm_vol(filtered_file);
+Y_filt = spm_read_vols(V_filt);  % Y: [X, Y, Z, Time]
 
 %% --- Reshape to [voxels x time] ---
-dims = size(Y_m);
-n_timepoints = dims(4);
-Y_m_reshaped = reshape(Y_m, [], n_timepoints); % Merged 
-Y_f_reshaped = reshape(Y_f, [], n_timepoints); % Filtered
+dims = size(V_orig);
+n_timepoints = dims(1);
+Y_m_reshaped = reshape(V_orig, [], n_timepoints); % Merged 
+Y_f_reshaped = reshape(Y_filt, [], n_timepoints); % Filtered
 
 %% --- Pick a random voxel (or specify coordinates) ---
 voxel_idx = 117001;  % Example: voxel number 5000
