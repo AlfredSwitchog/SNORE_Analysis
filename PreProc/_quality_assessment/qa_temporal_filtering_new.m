@@ -1,6 +1,6 @@
 % --- Settings ---
-merged_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_s3uaMFAN99SC020724.nii';     % Your 4D merged data
-filtered_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/fsl_merged_highpass_func.nii';     % Your 4D filtered data
+merged_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_func.nii';     % Your 4D merged data
+filtered_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/s3ua_hp_add_mean_func.nii';     % Your 4D filtered data
 TR = 2.5;
 
 %% --- Load 4D data ---
