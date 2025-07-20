@@ -19,7 +19,6 @@ singularity exec \
   -TR 2.5 \
   -polort 2
 
-
 #Convert back to nifti like this 
 singularity exec -B /scratch/c7201319 \
   /gpfs/gpfs1/sw/containers/x86_64/generic/afni/2023-07-03/afni.sif \
@@ -69,10 +68,19 @@ echo "Applying highpass filter with sigma=${SIGMA} volumes..."
 fslmaths "$MERGED_FILE" -bptf "$SIGMA" "$LOWPASS_SIGMA" "$FILTERED_FILE"
 
 
+#calculate the mean from the 4d image
+fslmaths input_file.nii -Tmean mean_signal.nii
+
+#apply the filter
 fslmaths /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_highpass_func.nii \
-  -bptf 17 -1 /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/fsl_merged_highpass_func.nii
+  -bptf 17 -1 /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/fsl_merged_highpass_func.nii \
+  -add mean.nii.gz output_file
+
 
   
 >" -bptf  <hp_sigma> <lp_sigma> : (-t in ip.c) Bandpass temporal filtering;
 >nonlinear highpass and Gaussian linear lowpass (with sigmas in volumes, not
 >seconds); set either sigma<0 to skip that filter"
+
+#Check the nifti header using FSL
+fslhd /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/fsl_merged_highpass_func.nii

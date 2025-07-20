@@ -53,4 +53,10 @@ singularity exec \
   /gpfs/gpfs1/sw/containers/x86_64/generic/afni/2023-07-03/afni.sif \
 nifti_tool -mod_hdr -mod_field pixdim '-1.0 2.04255 2.042551 2.200001 2.5 0 0 0' -infile ./merged_func.nii -overwrite
 
-/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_s3uaMFAN99SC020724.nii
+#calculate the mean from the 4d image
+fslmaths /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_func.nii -Tmean /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_mean_func.nii
+
+#apply the filter
+fslmaths /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_func.nii \
+  -bptf 17 -1 -add /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_mean_func.nii.gz \
+  /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/fsl_merged_highpass_add_mean_func.nii
