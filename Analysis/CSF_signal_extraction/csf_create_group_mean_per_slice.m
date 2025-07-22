@@ -60,15 +60,18 @@ end
 %subject_count_per_slice{slice_idx} = sum(~isnan(padded_matrix), 1);
 
 %% Save combined data
-output_folder = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev/SNORE_CSF_Merged';
+output_folder = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data';
 output_path = fullfile(output_folder, 'csf_group_mean_per_slice.mat');
 save(output_path, 'group_mean_csf_data', '-v7.3');  % v7.3 handles large files
 
-%% Analyse how many subjects contributed to mean calculation
-% Analyze subject contributions
-num_slices = numel(subject_count_per_slice);
+% Overlay subject count plots for the first 4 slices
+figure;
+hold on;
 
-for slice_idx = 1:num_slices
+num_slices_to_plot = min(4, numel(subject_count_per_slice));
+legend_entries = cell(1, num_slices_to_plot);
+
+for slice_idx = 1:num_slices_to_plot
     counts = subject_count_per_slice{slice_idx};
 
     if isempty(counts)
@@ -82,12 +85,15 @@ for slice_idx = 1:num_slices
     fprintf('  - Min subjects contributing: %d\n', min(counts));
     fprintf('  - Mean subject coverage: %.2f\n\n', mean(counts));
 
-    % Plot subject count over time
-    figure;
     plot(counts, 'LineWidth', 1.5);
-    title(sprintf('Subject Count per Timepoint - Slice %d', slice_idx));
-    xlabel('Timepoint');
-    ylabel('Number of Subjects');
-    ylim([0, max(counts)+1]);
-    grid on;
+    legend_entries{slice_idx} = sprintf('Slice %d', slice_idx);
 end
+
+title('Subject Count per Timepoint for First 4 Slices');
+xlabel('Timepoint');
+ylabel('Number of Subjects');
+ylim([0, max(cellfun(@max, subject_count_per_slice(1:num_slices_to_plot))) + 1]);
+legend(legend_entries, 'Location', 'best');
+grid on;
+hold off;
+

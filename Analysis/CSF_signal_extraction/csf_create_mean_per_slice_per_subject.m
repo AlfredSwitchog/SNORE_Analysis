@@ -1,4 +1,4 @@
-csf_time_series = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev/SNORE_CSF_Merged/all_csf_data_trimmed.mat';
+csf_time_series = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_trimmed.mat';
 load(csf_time_series);
 
 averaged_csf_data = cell(size(all_csf_data));  % same size as input
@@ -22,6 +22,6 @@ for subj = 1:numel(all_csf_data)
 end
 
 %% Save combined data
-output_folder = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev/SNORE_CSF_Merged';
+output_folder = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data';
 output_path = fullfile(output_folder, 'csf_mean_per_slice_pre_subject.mat');
 save(output_path, 'averaged_csf_data', '-v7.3');  % v7.3 handles large files

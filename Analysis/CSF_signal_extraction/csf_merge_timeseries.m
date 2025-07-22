@@ -1,6 +1,7 @@
 % Set folder containing the .mat files
 data_folder = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Raw_Signal';
 file_list = dir(fullfile(data_folder, '*.mat'));
+output_path= '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data';
 
 % Initialize output cell
 all_csf_data = cell(1, numel(file_list));
@@ -19,4 +20,5 @@ for i = 1:numel(file_list)
 end
 
 % Save combined data
-save('all_csf_data.mat', 'all_csf_data', '-v7.3');  % v7.3 handles large files
+out_file = fullfile(output_path, 'all_csf_data.mat');
+save(out_file, 'all_csf_data', '-v7.3');  % v7.3 handles large files
