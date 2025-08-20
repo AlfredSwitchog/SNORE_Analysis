@@ -1,0 +1,162 @@
+%% ============================================================
+%  Label fMRI timepoints with sleep stage (W / N1 / N2 / N3)
+%  Assumptions:
+%   - all_subjects: 1×N cell, each {i} is slices×1 cell of 1×T numeric
+%   - TR = 2.5 s
+%   - EEG leads fMRI by 2.5 s  -> fMRI t=0 aligns to EEG t=+2.5 s
+%   - CSV has columns: clock start time, start, end, stage
+%  Outputs created in workspace:
+%   - time_s                : T×1 vector (fMRI volume times, in EEG clock)
+%   - stage_per_timepoint   : T×1 string vector of labels for each volume
+%   - stage_flags_by_subject: 1×N cell; each is [nSlices × T] string labels
+% =============================================================
+
+%% --------------- CONFIG ----------------
+all_subjects_path      = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject.mat'
+csvFile            = '/Users/Richard/Masterabeit_local/EEG/SCORING/P2_sleep_MR_CB1_scores.csv';  % path to your scoring CSV
+TR                 = 2.5;                  % seconds
+eegLeadsSeconds    = 2.5;                  % EEG starts earlier by 2.5 s
+outOfRangeLabel    = "NA";                 % label for out-of-range volumes
+requireSameT       = true;                 % safety check across all slices
+
+%% --------------- LOAD / CHECK fMRI SHAPE ---------------
+Si = load(all_subjects_path);
+assert(isfield(Si,'averaged_csf_data'), 'Variable "averaged_csf_data" not found in %s', individual_file);
+all_subjects = Si.averaged_csf_data;
+
+assert(exist('all_subjects','var')==1, ...
+    'Variable "all_subjects" must exist in the workspace.');
+
+assert(iscell(all_subjects) && isvector(all_subjects), ...
+    '"all_subjects" should be a 1×N cell array (one cell per subject).');
+
+nSubjects = numel(all_subjects);
+assert(nSubjects>=1, 'all_subjects appears empty.');
+
+% Get T from first subject & first slice
+firstSubj = all_subjects{1};
+assert(iscell(firstSubj) && size(firstSubj,2)==1, ...
+    'Each subject should be a (slices×1) cell array.');
+
+nSlices_1 = size(firstSubj,1);
+assert(nSlices_1>=1, 'First subject has no slices.');
+
+T = numel(firstSubj{1});
+assert(T>=1, 'First slice has no timepoints.');
+
+if requireSameT
+    % Verify T matches across all slices and subjects
+    for s = 1:nSubjects
+        subjCell = all_subjects{s};
+        assert(iscell(subjCell) && size(subjCell,2)==1, ...
+            'Subject %d entry must be a (slices×1) cell array.', s);
+        for r = 1:size(subjCell,1)
+            assert(isvector(subjCell{r}) && isnumeric(subjCell{r}), ...
+                'Subject %d slice %d is not a numeric vector.', s, r);
+            assert(numel(subjCell{r})==T, ...
+                'All time series must have same #volumes T. Mismatch at subject %d, slice %d.', s, r);
+        end
+    end
+end
+
+%% --------------- READ SCORING CSV ----------------
+% Read and normalize column names
+opts = detectImportOptions(csvFile, 'NumHeaderLines', 0);
+opts.VariableNamingRule = 'modify';
+scoreTbl = readtable(csvFile, opts);
+
+v = lower(string(scoreTbl.Properties.VariableNames));
+req = ["start","end","stage"];
+assert(all(ismember(req, v)), ...
+    'CSV must contain columns: start, end, stage (in seconds).');
+
+% Extract/standardize columns
+start_s = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="start",1)});
+end_s   = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="end",1)});
+stage   = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="stage",1)});
+
+% Coerce to numeric and string
+if ~isnumeric(start_s), start_s = str2double(string(start_s)); end
+if ~isnumeric(end_s),   end_s   = str2double(string(end_s));   end
+stage = string(stage);
+
+% Clean + map stage strings to canonical forms
+stage = normalizeStageStr(stage);  % maps Wake->W, w->W, REM->R, keeps N1/N2/N3
+
+% Sort by start time
+tbl = table(start_s(:), end_s(:), stage(:), 'VariableNames', {'start','end','stage'});
+tbl = sortrows(tbl,'start');
+
+% Basic interval sanity checks
+assert(all(tbl.end > tbl.start), 'Each interval must have end > start.');
+assert(issorted(tbl.start), 'Start times must be sorted ascending.');
+assert(all(diff(tbl.start) >= 0), 'Non-monotonic start times in scoring.');
+
+%% --------------- BUILD VOLUME TIMES (in EEG CLOCK) ---------------
+% fMRI volume times in fMRI clock: 0, TR, 2TR, ...
+t_fmri = (0:T-1)' * TR;
+% Convert to EEG clock by adding the lead (EEG leads -> shift forward)
+time_s = t_fmri + eegLeadsSeconds;   % This is what gets discretized
+
+%% --------------- MAP TIMES -> STAGES ----------------
+% Use left-closed, right-open bins: [start_i, start_{i+1}) ... last uses end_N
+edges = [tbl.start; tbl.end(end)];
+bin   = discretize(time_s, edges);      % NaN = out of range
+stage_per_timepoint = strings(T,1);
+stage_per_timepoint(:) = outOfRangeLabel;
+
+inRange = ~isnan(bin);
+stage_per_timepoint(inRange) = tbl.stage(bin(inRange));
+
+%% --------------- REPLICATE LABELS PER SUBJECT & SLICE ---------------
+stage_flags_by_subject = cell(1, nSubjects);
+for s = 1:nSubjects
+    nSlices = size(all_subjects{s}, 1);
+    % Make an nSlices × T string matrix where each row copies the per-volume labels
+    stage_flags_by_subject{s} = repmat(stage_per_timepoint.', nSlices, 1);
+end
+
+%% --------------- (Optional) QUICK SUMMARY ---------------
+% Count labels across the run
+labels = unique(stage_per_timepoint);
+counts = arrayfun(@(L) sum(stage_per_timepoint==L), labels);
+disp('Stage counts across the run:'); 
+disp(table(labels, counts));
+
+% Peek at first 20 volumes
+disp('First 20 volume labels:');
+disp(stage_per_timepoint(1:min(20,T)).');
+
+%% --------------- DONE ---------------
+% Variables now in workspace:
+%   time_s                : T×1 times (seconds, EEG clock)
+%   stage_per_timepoint   : T×1 string labels ("W","N1","N2","N3", possibly "R", or "NA")
+%   stage_flags_by_subject: 1×N cell; each is [nSlices × T] string labels matching your all_subjects layout
+
+%% --------------- HELPER: Stage normalization ----------------
+function out = normalizeStageStr(in)
+    % Map common variants to canonical labels
+    s = lower(strtrim(string(in)));
+    out = strings(size(s));
+    for i = 1:numel(s)
+        si = s(i);
+        if si == "" || ismissing(si)
+            out(i) = "NA";
+            continue
+        end
+        if contains(si, "wake") || si == "w"
+            out(i) = "W";
+        elseif si == "n1" || contains(si, "stage 1") || si == "s1"
+            out(i) = "N1";
+        elseif si == "n2" || contains(si, "stage 2") || si == "s2"
+            out(i) = "N2";
+        elseif si == "n3" || contains(si, "stage 3") || si == "s3" || contains(si,"sws")
+            out(i) = "N3";
+        elseif contains(si, "rem") || si == "r"
+            out(i) = "R";      % kept in case present; not required by prompt
+        else
+            % Fallback: keep uppercase of whatever was given
+            out(i) = upper(string(in(i)));
+        end
+    end
+end
