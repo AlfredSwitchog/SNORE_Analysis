@@ -17,11 +17,12 @@
 
 %% --------------- CONFIG ----------------
 all_subjects_path  = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject.mat';
-csvFile            = '/Users/Richard/Masterabeit_local/EEG/SCORING/';  % can be a single CSV file OR a folder containing per-subject CSVs
+csvFile            = '/Users/Richard/Masterabeit_local/EEG/SCORING_files';  % can be a single CSV file OR a folder containing per-subject CSVs
 TR                 = 2.5;                  % seconds
 eegLeadsSeconds    = 2.5;                  % EEG starts earlier by 2.5 s
 outOfRangeLabel    = "NA";                 % label for out-of-range volumes
 requireSameT       = true;                 % enforce same T within each subject
+subjects_to_map    = [];                   % e.g., [1 2 5]; empty [] => map all subjects
 
 %% --------------- LOAD / CHECK fMRI SHAPE ---------------
 Si = load(all_subjects_path);
@@ -70,12 +71,16 @@ end
 %% --------------- DISCOVER / ASSIGN SCORING FILES ----------------
 % Accept either a file path or a folder path in csvFile
 isFolder = isfolder(csvFile);
+
+% We'll produce a 1×nSubjects cell; each {s} is a string array of 1+ files for subject s
+filesForSubject = cell(1, nSubjects);
+
 if isFolder
     D = dir(fullfile(csvFile, '*.csv'));
     assert(~isempty(D), 'No CSV files found in folder: %s', csvFile);
     filePaths = arrayfun(@(d) fullfile(d.folder, d.name), D, 'UniformOutput', false);
 
-    % Try to map by subject index using numbers in filenames (e.g., P2, _02_)
+    % Extract first integer in each filename as the subject index
     fileNums = nan(numel(filePaths),1);
     for i = 1:numel(filePaths)
         [~,fname,~] = fileparts(filePaths{i});
@@ -84,64 +89,104 @@ if isFolder
             fileNums(i) = str2double(tok{1});
         end
     end
-    filesForSubject = strings(1, nSubjects);
 
-    % Natural sort fallback order
-    [~, natOrder] = sort_nat(cellfun(@(p) string(p), filePaths, 'UniformOutput', false));
-
+    % Build grouping: subject s -> all files whose number == s
     for s = 1:nSubjects
-        idx = find(fileNums == s, 1, 'first'); % direct numeric match (preferred)
-        if isempty(idx)
-            % fallback by natural order position
-            if s <= numel(natOrder)
-                idx = natOrder(s);
-            else
-                error('Not enough scoring files for %d subjects. Found %d files.', nSubjects, numel(filePaths));
+        idxs = find(fileNums == s);
+        if ~isempty(idxs)
+            filesForSubject{s} = string(filePaths(idxs));
+        else
+            filesForSubject{s} = strings(0,1); % none found
+        end
+    end
+
+    % Fallback for subjects without numbered files:
+    % If you want a fallback, uncomment the block below to assign remaining files
+    % by natural filename order (WARNING: cannot infer split-grouping in fallback).
+    %
+    %{
+    [~, natOrder] = sort_nat(filePaths); used = false(size(filePaths));
+    for s = 1:nSubjects
+        if ~isempty(filesForSubject{s}), used(ismember(1:numel(filePaths), find(fileNums==s))) = true; end
+    end
+    for s = 1:nSubjects
+        if isempty(filesForSubject{s})
+            nextIdx = find(~used(natOrder), 1, 'first');
+            if ~isempty(nextIdx)
+                used(natOrder(nextIdx)) = true;
+                filesForSubject{s} = string(filePaths(natOrder(nextIdx)));
             end
         end
-        filesForSubject(s) = string(filePaths{idx});
     end
+    %}
+
     fprintf('Scoring file assignment:\n');
     for s = 1:nSubjects
-        fprintf('  Subject %d  <--  %s\n', s, filesForSubject(s));
+        if isempty(filesForSubject{s})
+            fprintf('  Subject %d  <--  [NO FILES FOUND]\n', s);
+        else
+            listStr = strjoin(filesForSubject{s}, ', ');
+            fprintf('  Subject %d  <--  %s\n', s, listStr);
+        end
     end
 
 else
-    % Single file: use same scoring for all subjects
-    filesForSubject = repmat(string(csvFile), 1, nSubjects);
+    % Single file: use same scoring file for all subjects
+    for s = 1:nSubjects
+        filesForSubject{s} = string(csvFile);
+    end
     fprintf('Using single scoring file for all %d subjects: %s\n', nSubjects, csvFile);
 end
+
 
 %% --------------- PER-SUBJECT LABELING ----------------
 stage_flags_by_subject         = cell(1, nSubjects);  % {s}: [nSlices_s × T_s] string matrix
 time_s_by_subject              = cell(1, nSubjects);  % {s}: T_s×1 EEG-clock times
 stage_per_timepoint_by_subject = cell(1, nSubjects);  % {s}: T_s×1 labels
 
+% Which subjects to actually map?
+if isempty(subjects_to_map)
+    subjects_to_map_mask = true(1, nSubjects);
+else
+    subjects_to_map_mask = false(1, nSubjects);
+    subjects_to_map_mask(subjects_to_map(subjects_to_map>=1 & subjects_to_map<=nSubjects)) = true;
+end
+
 for s = 1:nSubjects
     subjCell  = all_subjects{s};
     nSlices_s = size(subjCell,1);
     T_s       = numel(subjCell{1});
 
-    % ---------- Read scoring for this subject ----------
-    tbl = read_scoring_table(char(filesForSubject(s)));
-
-    % Precompute discretize edges once (left-closed, right-open)
-    edges = [tbl.start; tbl.end(end)];
-
-    % ---------- Build times and map ----------
-    t_fmri_s   = (0:T_s-1)' * TR;      % fMRI clock
+    % Build fMRI and EEG-clock times for this subject
+    t_fmri_s   = (0:T_s-1)' * TR;           % fMRI clock
     time_eeg_s = t_fmri_s + eegLeadsSeconds;
 
-    bin_s   = discretize(time_eeg_s, edges);   % NaN = out of range
-    labels_s = strings(T_s,1); labels_s(:) = outOfRangeLabel;
-    inRange = ~isnan(bin_s);
-    labels_s(inRange) = tbl.stage(bin_s(inRange));
+    if subjects_to_map_mask(s)
+        % --- Mapped subjects: require >=1 scoring file ---
+        if isempty(filesForSubject{s})
+            warning('No scoring files found for subject %d. Filling with NA.', s);
+            labels_s = repmat(outOfRangeLabel, T_s, 1);
+        else
+            % Read & merge all scoring files for this subject
+            tbl = read_and_merge_scoring_tables(filesForSubject{s});
+            edges = [tbl.start; tbl.end(end)];      % left-closed, right-open
+
+            bin_s    = discretize(time_eeg_s, edges);   % NaN = out of range
+            labels_s = repmat(outOfRangeLabel, T_s, 1);
+            inRange  = ~isnan(bin_s);
+            labels_s(inRange) = tbl.stage(bin_s(inRange));
+        end
+    else
+        % --- Unmapped subjects: fill with NA (same length) ---
+        labels_s = repmat(outOfRangeLabel, T_s, 1);
+    end
 
     % Store
     time_s_by_subject{s}              = time_eeg_s;
     stage_per_timepoint_by_subject{s} = labels_s;
     stage_flags_by_subject{s}         = repmat(labels_s.', nSlices_s, 1);
 end
+
 
 %% --------------- BACKWARD-COMPATIBLE FIRST-SUBJECT OUTPUTS ---------------
 time_s               = time_s_by_subject{1};
@@ -163,61 +208,141 @@ disp(stage_per_timepoint(1:min(20, numel(stage_per_timepoint))).');
 %% ======================= HELPERS ===========================
 function tbl = read_scoring_table(pathToCsv)
     % Read and normalize a scoring CSV into columns: start, end, stage
-    opts = detectImportOptions(pathToCsv, 'NumHeaderLines', 0);
-    opts.VariableNamingRule = 'modify';
-    scoreTbl = readtable(pathToCsv, opts);
+    % NO STAGE NORMALIZATION: stage strings are passed through exactly as in the CSV.
+    % Robust to preamble lines (e.g., "Wonambi v7.11"), BOMs, odd headers,
+    % and delimiter (, / ;) differences.
 
-    v = lower(string(scoreTbl.Properties.VariableNames));
-    req = ["start","end","stage"];
-    assert(all(ismember(req, v)), ...
-        'CSV %s must contain columns: start, end, stage (in seconds).', pathToCsv);
+    % --- 1) Find the actual header row that contains start/end/stage ---
+    lines = readlines(pathToCsv);
+    if isempty(lines)
+        error('read_scoring_table: file is empty: %s', pathToCsv);
+    end
 
-    start_s = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="start",1)});
-    end_s   = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="end",1)});
-    stage   = scoreTbl.(scoreTbl.Properties.VariableNames{find(v=="stage",1)});
+    headerIdx = NaN;
+    delim = ',';
+    for i = 1:numel(lines)
+        L = strtrim(lines(i));
+        if L == ""         % skip empty lines
+            continue
+        end
+        % decide delimiter for this line
+        cComma = count(L, ","); cSemi = count(L, ";");
+        if cComma==0 && cSemi==0, continue; end
+        thisDelim = iff(cSemi > cComma, ';', ',');
+
+        toks = split(L, [",",";"]);
+        toks = lower(strtrim(toks));
+        canon = regexprep(toks, '[^a-z0-9]+', '');  % "clock start time" -> "clockstarttime"
+        if any(canon=="start") && any(canon=="end") && any(canon=="stage")
+            headerIdx = i;
+            delim = thisDelim;
+            break
+        end
+    end
+
+    if isnan(headerIdx)
+        error('Could not find a header row with "start","end","stage" in %s', pathToCsv);
+    end
+
+    % --- 2) Build import options (set properties AFTER creating opts) ---
+    opts = detectImportOptions(pathToCsv, 'Delimiter', delim);
+    % Preserve original header names if supported
+    try
+        opts.VariableNamingRule = 'preserve';
+    catch
+        % older MATLAB: handled via readtable('PreserveVariableNames', true)
+    end
+    % Ensure we use the detected header row and start reading after it
+    if isprop(opts, 'VariableNamesLine'), opts.VariableNamesLine = headerIdx; end
+    if isprop(opts, 'DataLines'),        opts.DataLines        = [headerIdx+1, Inf]; end
+
+    % --- 3) Read table (be liberal with compatibility flags) ---
+    try
+        scoreTbl = readtable(pathToCsv, opts, 'TextType','string', 'PreserveVariableNames', true);
+    catch
+        try
+            scoreTbl = readtable(pathToCsv, opts, 'PreserveVariableNames', true);
+        catch
+            scoreTbl = readtable(pathToCsv, opts);
+        end
+    end
+
+    % --- 4) Locate the needed columns by canonical name ---
+    varNames  = string(scoreTbl.Properties.VariableNames);
+    canonVars = lower(regexprep(strtrim(varNames), '[^a-z0-9]+', ''));
+
+    idxStart = find(canonVars == "start", 1);
+    idxEnd   = find(canonVars == "end",   1);
+    idxStage = find(canonVars == "stage", 1);
+
+    assert(~isempty(idxStart) && ~isempty(idxEnd) && ~isempty(idxStage), ...
+        'CSV %s must contain header columns: start, end, stage (in seconds).', pathToCsv);
+
+    % --- 5) Extract columns and coerce start/end to numeric; KEEP STAGE AS-IS ---
+    start_s = scoreTbl.(varNames(idxStart));
+    end_s   = scoreTbl.(varNames(idxEnd));
+    stage   = scoreTbl.(varNames(idxStage));    % <- exact strings from CSV
 
     if ~isnumeric(start_s), start_s = str2double(string(start_s)); end
     if ~isnumeric(end_s),   end_s   = str2double(string(end_s));   end
-    stage = normalizeStageStr(string(stage));
 
-    tbl = table(start_s(:), end_s(:), stage(:), 'VariableNames', {'start','end','stage'});
+    % --- 6) Canonical output table + basic checks ---
+    tbl = table(start_s(:), end_s(:), string(stage(:)), ...
+                'VariableNames', {'start','end','stage'});
     tbl = sortrows(tbl,'start');
 
-    assert(all(tbl.end > tbl.start), 'Scoring %s: each interval must have end > start.', pathToCsv);
-    assert(issorted(tbl.start), 'Scoring %s: start times must be sorted.', pathToCsv);
+    % allow tiny floating noise on end-start checks if needed
+    tol = 1e-8;
+    assert(all(tbl.end > tbl.start - tol), 'Scoring %s: each interval must have end > start.', pathToCsv);
+    assert(issorted(tbl.start),            'Scoring %s: start times must be sorted.', pathToCsv);
 end
 
-function out = normalizeStageStr(in)
-    % Map common variants to canonical labels
-    s = lower(strtrim(string(in)));
-    out = strings(size(s));
-    for i = 1:numel(s)
-        si = s(i);
-        if si == "" || ismissing(si)
-            out(i) = "NA";
-            continue
-        end
-        if contains(si, "wake") || si == "w"
-            out(i) = "W";
-        elseif si == "n1" || contains(si, "stage 1") || si == "s1"
-            out(i) = "N1";
-        elseif si == "n2" || contains(si, "stage 2") || si == "s2"
-            out(i) = "N2";
-        elseif si == "n3" || contains(si, "stage 3") || si == "s3" || contains(si,"sws")
-            out(i) = "N3";
-        elseif contains(si, "rem") || si == "r"
-            out(i) = "R";
-        else
-            out(i) = upper(string(in(i)));
-        end
-    end
-end
+% tiny inline helper (avoids toolbox dependency)
+function out = iff(cond, a, b), if cond, out = a; else, out = b; end, end
+
+% tiny inline helper for conditional choice
+function out = ifelse(cond, a, b), out = a; if ~cond, out = b; end, end
 
 function [sortedNames, order] = sort_nat(names)
     % Natural sort for filenames (numbers in order: 2 < 10).
-    % Input: cellstr or string array
-    if isstring(names), names = cellstr(names); end
+    % Accepts: char, string array, cellstr, or cell array of strings/chars.
+
+    % Normalize to cell array of char row vectors
+    if ischar(names)
+        names = {names};
+    elseif isstring(names)
+        names = cellstr(names);  % string array -> cellstr
+    elseif iscell(names)
+        names = cellfun(@char, names, 'UniformOutput', false); % string->char if needed
+    else
+        error('sort_nat: input must be char, string, or cell array.');
+    end
+
+    % Left-pad numeric substrings so lexical sort becomes natural
     keys = regexprep(names, '(\d+)', '${sprintf(''%010d'', str2double($1))}');
     [~, order] = sort(keys);
     sortedNames = names(order);
 end
+
+function tbl = read_and_merge_scoring_tables(fileList)
+    % Accept string array, cellstr, or char for one or more files.
+    if ischar(fileList), fileList = string(fileList); end
+    if iscell(fileList), fileList = string(fileList); end
+    assert(~isempty(fileList), 'read_and_merge_scoring_tables: empty file list');
+
+    % Read each file into canonical table
+    T = cell(numel(fileList),1);
+    for k = 1:numel(fileList)
+        T{k} = read_scoring_table(char(fileList(k)));
+    end
+
+    % Concatenate and sort by start
+    tbl = sortrows(vertcat(T{:}), 'start');
+
+    % Validate no overlaps (allow contiguity)
+    % If you expect small floating rounding, you can relax with a tiny tol.
+    tol = 1e-6;  % set to e.g., 1e-6 if needed
+    assert(all( tbl.start(2:end) >= tbl.end(1:end-1) - tol ), ...
+        'Merged scoring has overlapping intervals. Check split files.');
+end
+
