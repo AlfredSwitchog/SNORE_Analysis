@@ -1,6 +1,6 @@
 %% === Load group-averaged CSF signal ===
 data_file = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_group_mean_per_slice.mat';
-load(all_subjects_path, 'mean_csf_data');  % Assumes variable is called mean_csf_data
+load(data_file, 'group_mean_csf_data');  
 
 %% === Load individual CSF signal ===
 all_subjects_path = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject.mat';

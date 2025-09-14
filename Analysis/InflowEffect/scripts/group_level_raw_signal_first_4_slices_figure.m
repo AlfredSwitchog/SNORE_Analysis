@@ -1,16 +1,16 @@
 %% === Load group-averaged CSF signal ===
-data_file = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_group_mean_per_slice.mat';
-load(all_subjects_path, 'mean_csf_data');  % Assumes variable is called mean_csf_data
+data_file = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_group_mean_per_slice_cleaned.mat';
+load(data_file);  
 
 %% === Load individual CSF signal ===
 all_subjects_path = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject.mat';
 load(all_subjects_path);
-mean_csf_data = averaged_csf_data{50}; %load specific subject 
+group_mean_csf_data = averaged_csf_data{50}; %load specific subject 
 
 %% === Calculation Start ===
 
 % Number of slices to plot
-num_slices_to_plot = min(4, numel(mean_csf_data));
+num_slices_to_plot = min(4, numel(group_mean_csf_data));
 
 % Create a new figure
 figure;
@@ -18,7 +18,7 @@ hold on;
 
 % Loop through the first 4 slices and plot the CSF signal
 for slice_idx = 1:num_slices_to_plot
-    slice_signal = mean_csf_data{slice_idx};
+    slice_signal = group_mean_csf_data{slice_idx};
 
     if isempty(slice_signal)
         warning('Slice %d has no data. Skipping.', slice_idx);
@@ -39,12 +39,12 @@ hold off;
 %% mean value per slice
 
 % Preallocate mean values
-num_slices = numel(mean_csf_data);
+num_slices = numel(group_mean_csf_data);
 mean_signal_per_slice = nan(1, num_slices);
 
 % Compute mean across timepoints for each slice
 for slice_idx = 1:num_slices
-    signal = mean_csf_data{slice_idx};
+    signal = group_mean_csf_data{slice_idx};
     if isempty(signal)
         warning('Slice %d has no data. Skipping.', slice_idx);
         continue;

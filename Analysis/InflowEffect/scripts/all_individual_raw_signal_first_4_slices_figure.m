@@ -1,6 +1,6 @@
 %% ============== USER SETTINGS ==============
-all_subjects_path = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject.mat';
-output_dir        = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Analysis/InflowEffect/Figures/all_individual_figures';
+all_subjects_path = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject_cleaned.mat';
+output_dir        = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Analysis/InflowEffect/Figures/all_individual_figures_cleaned';
 subject_indices   = [];            % [] = process ALL subjects; or e.g., [50] or [1 5 12]
 TR_seconds        = [];            % e.g., 2.0 to label seconds; [] keeps timepoints
 save_png          = true;          % set false if you don’t want PNGs
@@ -9,8 +9,8 @@ save_pdf          = false;         % set true if you also want PDFs
 
 % Load
 S = load(all_subjects_path);
-assert(isfield(S,'averaged_csf_data'), 'Variable "averaged_csf_data" not found.');
-averaged_csf_data = S.averaged_csf_data;   % {subject} -> {slice} -> 1xT vector
+assert(isfield(S,'all_subjects'), 'Variable "all_subjects" not found.');
+averaged_csf_data = S.all_subjects;   % {subject} -> {slice} -> 1xT vector
 
 % Subjects to process
 if isempty(subject_indices)
@@ -21,15 +21,33 @@ end
 if ~exist(output_dir, 'dir'); mkdir(output_dir); end
 
 for subj = subject_indices
+
     % --- Get subject data ---
     assert(subj>=1 && subj<=numel(averaged_csf_data), 'Subject %d out of range.', subj);
     slice_cells = averaged_csf_data{subj};
-    assert(iscell(slice_cells), 'Expected cell array of slices for subject %d.', subj);
+    
+        % --- Normalize data: wrap numeric arrays into a cell ---
+    if isnumeric(slice_cells) && isvector(slice_cells)
+        slice_cells = {slice_cells};  % single slice
+    elseif isempty(slice_cells)
+        slice_cells = {};             % no slices
+    elseif ~iscell(slice_cells)
+        warning('Subject %d has unexpected format (%s). Skipping.', subj, class(slice_cells));
+        continue;
+    end
 
-    % --- Pick first 4 non-empty slices ---
-    valid = find(cellfun(@(x) ~isempty(x) && isnumeric(x) && isvector(x), slice_cells));
+    % --- Skip subjects that are completely empty (no slices or all empties) ---
+    if isempty(slice_cells) || all(cellfun(@isempty, slice_cells))
+        warning('Subject %d has no slices. Skipping.', subj);
+        continue;
+    end
+
+    % --- Pick first 4 non-empty, non-zero slices ---
+    % A valid slice must be a numeric vector and contain at least one non-zero sample.
+    valid = find(cellfun(@(x) ~isempty(x) && isnumeric(x) && isvector(x) && any(x~=0), slice_cells));
+
     if isempty(valid)
-        warning('Subject %d has no valid slices. Skipping.', subj);
+        warning('Subject %d has no valid (non-zero) slices. Skipping.', subj);
         continue;
     end
     slice_ids = valid(1:min(4, numel(valid)));
@@ -72,5 +90,6 @@ for subj = subject_indices
     if save_pdf, exportgraphics(fh, [base '.pdf']); end
     close(fh);
 end
+
 
 disp("Done. Figures saved in: " + string(output_dir));

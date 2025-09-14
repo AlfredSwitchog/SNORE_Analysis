@@ -1,6 +1,6 @@
 csf_time_series = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_trimmed.mat';
 load(csf_time_series);
-
+%%
 averaged_csf_data = cell(size(all_csf_data));  % same size as input
 
 for subj = 1:numel(all_csf_data)

@@ -16,16 +16,20 @@
 % This preserves all available data without interpolation or truncation,
 % and provides a per-slice group mean time series of maximal length.
 
+%% load data
+csf_data = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject_cleaned.mat';
+load(csf_data)
+
 %% Calculate per slice mean at the group level
-max_slices = max(cellfun(@numel, averaged_csf_data));
+max_slices = max(cellfun(@numel, all_subjects));
 group_mean_csf_data = cell(max_slices, 1);
 
 for slice_idx = 1:max_slices
     slice_ts_list = {};
     time_lengths = [];
 
-    for subj = 1:numel(averaged_csf_data)
-        subj_slices = averaged_csf_data{subj};
+    for subj = 1:numel(all_subjects)
+        subj_slices = all_subjects{subj};
         
         if numel(subj_slices) >= slice_idx
             ts = subj_slices{slice_idx};
@@ -61,10 +65,10 @@ end
 
 %% Save combined data
 output_folder = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data';
-output_path = fullfile(output_folder, 'csf_group_mean_per_slice.mat');
+output_path = fullfile(output_folder, 'csf_group_mean_per_slice_cleaned.mat');
 save(output_path, 'group_mean_csf_data', '-v7.3');  % v7.3 handles large files
 
-% Overlay subject count plots for the first 4 slices
+%% Overlay subject count plots for the first 4 slices
 figure;
 hold on;
 
