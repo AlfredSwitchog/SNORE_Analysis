@@ -1,4 +1,4 @@
-function extract_csf_signals(participant_id)
+function csf_extract_signals(participant_id)
 % Extract CSF signal from the bottom slices for one participant
 % Convert numeric input to string if necessary
 if isnumeric(participant_id)
@@ -16,12 +16,14 @@ switch lower(env)
     case 'leo5_prod'
         main_dir   = '/scratch/c7201319/SNORE_MR_out';
         spm_path   = '/scratch/c7201319/spm12_dev';
-        output_dir = '/scratch/c7201319/SNORE_Analysis/Data';
+        output_dir = '/scratch/c7201319/SNORE_CSF_Data/Raw_Signal';
+        script_dir = '/scratch/c7201319/SNORE_Analysis/Analysis/CSF_signal_extraction';
     otherwise
         error('Unknown environment "%s".', env);
 end
 
 addpath(spm_path);
+addpath(script_dir);
 fprintf('Using SPM from: %s\n', spm_path);
 
 participant_path = fullfile(main_dir, participant_id);
@@ -32,16 +34,16 @@ participant_path = fullfile(main_dir, participant_id);
 try
     %% === Load functional file ===
     func_folder = fullfile(participant_path, 'func_merged');
-    func_file = dir(fullfile(func_folder, 'merged_*.nii'));
+    func_file = dir(fullfile(func_folder, 's3ua_*.nii'));
 
     if isempty(func_file)
-        gz_func_file = dir(fullfile(func_folder, 'merged_*.nii.gz'));
+        gz_func_file = dir(fullfile(func_folder, 's3ua_*.nii.gz'));
         if isempty(gz_func_file)
             error('No functional file found for participant %s.', participant_id);
         end
         fprintf('Unzipping functional file: %s\n', gz_func_file(1).name);
         gunzip(fullfile(func_folder, gz_func_file(1).name));
-        func_file = dir(fullfile(func_folder, 'merged_*.nii'));
+        func_file = dir(fullfile(func_folder, 's3ua_*.nii'));
     end
 
     img_file = fullfile(func_folder, func_file(1).name);

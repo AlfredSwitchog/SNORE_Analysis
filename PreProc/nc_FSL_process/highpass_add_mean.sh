@@ -16,6 +16,12 @@ input_file="$folderpath/merged_func.nii"
 mean_file="$folderpath/merged_mean_func.nii.gz"
 output_file="$folderpath/s3ua_hp_add_mean_func.nii.gz"
 
+#check if input file exists
+if [[ ! -f "$input_file" ]]; then
+  echo "Input file not found: $input_file"
+  exit 1
+fi
+
 # Step 1: Calculate the mean
 echo "Calculating the mean..."
 fslmaths $input_file -Tmean $mean_file

@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=highpass_add_mean_array
-#SBATCH --output=highpass_add_mean_%A_%a.out
-#SBATCH --error=highpass_add_mean_%A_%a.err
-#SBATCH --time=00:15:00
-#SBATCH --mem=5G
+#SBATCH --output=./_output_errors/highpass_add_mean_%A_%a.out
+#SBATCH --error=./_output_errors/highpass_add_mean_%A_%a.err
+#SBATCH --time=00:30:00
+#SBATCH --mem=20G
 #SBATCH --cpus-per-task=1
-#SBATCH --array=7
+#SBATCH --array=2,3,4,6,8,9,10,11,12,14,15,16,20,21,23,24,25,26,27,28,29,30,32,33,37,38,39,40,41,43,46,49,50,52,54,56,57,58,59,62,63,65,66,101
 #SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
 
