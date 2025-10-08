@@ -5,10 +5,10 @@ module purge
 module load fsl
 
 # === Inputs ===
-MEAN_EPI_IN="/scratch/c7201319/SNORE_MR_out/2/func_mean_ua/meanua_n4_.nii"
+MEAN_EPI_IN="/scratch/c7201319/SNORE_MR_out/3/func_mean_ua/meanua_n4_.nii"
 
 # === Outputs ===
-OUT_MEAN_DIR="/scratch/c7201319/SNORE_MRI_data_dev_out/2/func_mean_ua"
+OUT_MEAN_DIR="/scratch/c7201319/SNORE_MRI_data_dev_out/3/func_mean_ua"
 
 # Participant-agnostic base names
 MEAN_BASE="meanEPI"                 # will produce meanEPI_brain_mask.nii.gz
