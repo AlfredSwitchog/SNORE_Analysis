@@ -7,7 +7,6 @@ module load freesurfer
 
 # === Inputs ===
 MEAN_EPI_IN="/scratch/c7201319/SNORE_MRI_data_dev_out/1/nifti_raw/meanuaMFRO01GG010724-0011-00001-000001.nii"
-LC_MASK_IN="/scratch/c7201319/SNORE_LC_Masks/combined_masks_itksnap_labels/1_vis.nii"
 
 # === Outputs ===
 OUT_MEAN_DIR="/scratch/c7201319/SNORE_MRI_data_dev_out/1/func_mean_ua"
