@@ -16,7 +16,7 @@ for pid in $(seq 1 41); do
     if [ -f "$MEAN_EPI_IN" ]; then
         echo "[$(date +'%H:%M:%S')] Processing participant ${pid}..."
         mkdir -p "${OUT_MEAN_DIR}"
-        bet "${MEAN_EPI_IN}" "${OUT_MEAN_DIR}/${MEAN_BASE}_brain" -f 0.5 -g 0 -n -m
+        bet "${MEAN_EPI_IN}" "${OUT_MEAN_DIR}/${MEAN_BASE}_brain" -f 0.25 -g 0 -n -m
         echo "Created: ${OUT_MEAN_DIR}/${MEAN_BASE}_brain_mask.nii.gz"
     else
         echo "[$(date +'%H:%M:%S')] Skipping participant ${pid} (no meanua_n4_.nii found)."
