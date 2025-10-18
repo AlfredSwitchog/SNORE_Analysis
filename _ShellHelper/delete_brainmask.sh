@@ -12,13 +12,13 @@ for SUBJ_DIR in "$BASE_DIR"/*; do
         # Delete compressed mask if it exists
         if [[ -f "$MASK_GZ" ]]; then
             echo "Deleting: $MASK_GZ"
-            #rm "$MASK_GZ"
+            rm "$MASK_GZ"
         fi
 
         # Delete uncompressed mask if it exists
         if [[ -f "$MASK_NII" ]]; then
             echo "Deleting: $MASK_NII"
-            #rm "$MASK_NII"
+            rm "$MASK_NII"
         fi
     fi
 done
