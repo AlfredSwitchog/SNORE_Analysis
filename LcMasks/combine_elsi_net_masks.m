@@ -29,7 +29,7 @@ for f = 1:numel(files)
     out_mask = fullfile(out_dir, sprintf('%s_combined_LCmask.nii', pid));
 
     % Run SPM image calculator (binary union)
-    spm_imcalc({left_mask, right_mask}, out_mask, 'i1>0 | i2>0', struct('dtype',2));
+    spm_imcalc<({left_mask, right_mask}, out_mask, 'i1>0 | i2>0', struct('dtype',2));
     
     fprintf('Participant %s → %s\n', pid, out_mask);
 end

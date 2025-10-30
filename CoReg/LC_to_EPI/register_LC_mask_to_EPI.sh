@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------- Config: set the participant ID --------
-PID=1
+PID=16
 
 # -------- Paths (edit only if your layout differs) --------
 BASE_OUT="/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/${PID}"

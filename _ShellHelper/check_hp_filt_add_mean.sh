@@ -24,4 +24,3 @@ for dir in "$BASE_DIR"/*/; do
     echo "Participant ${participant}: ❌ Missing"
   fi
 done
-
