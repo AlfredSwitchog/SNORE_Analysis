@@ -13,7 +13,7 @@ function SNORE_preprocessing(participant_id)
     fprintf('Processing participant %d\n', participant_id);
 
     %% Set environment: 'local', 'leo5_prod', or 'leo5_test'
-    env = 'leo5_test';  % <-- Change this to the appropriate environment
+    env = 'leo5_prod';  % <-- Change this to the appropriate environment
     
     if strcmpi(env, 'local')
         scriptpath  = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
@@ -56,13 +56,13 @@ function SNORE_preprocessing(participant_id)
     T1_folder = fullfile(generalpath, num2str(participant_id), 'T1', 'MR t1_mprage_tra_p2_0.8mm_iso');
 
     %% Structural: Create output directories if it doesn't exist and convert DICOM to Nifti
-    OutDir_T1 = fullfile(outputpath, num2str(participant_id), 'T1');
-    if ~exist(OutDir_T1, 'dir')
-        mkdir(OutDir_T1);
-    end
-    cd(OutDir_T1); % Move into nifti folder
+    %OutDir_T1 = fullfile(outputpath, num2str(participant_id), 'T1');
+    %if ~exist(OutDir_T1, 'dir')
+     %   mkdir(OutDir_T1);
+    %end
+    %cd(OutDir_T1); % Move into nifti folder
 
-    convertDicomDir2Nifti(T1_folder, OutDir_T1);
+    %convertDicomDir2Nifti(T1_folder, OutDir_T1);
     %%  Functionals: Create output directories if it doesn't exist and convert DICOM to Nifti
     OutDir = fullfile(outputpath, num2str(participant_id), 'nifti_raw_2');
     if ~exist(OutDir, 'dir')
