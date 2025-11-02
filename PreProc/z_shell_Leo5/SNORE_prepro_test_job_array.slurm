@@ -2,11 +2,11 @@
 #SBATCH --job-name=SNORE_preprocessing_array_test               # Job name
 #SBATCH --output=job_%A_%a.out                                  # Output file (%A = job ID, %a = array task ID)
 #SBATCH --error=job_%A_%a.err                                   # Error file
-#SBATCH --time=00:05:00                                         # Max wall time 
+#SBATCH --time=00:30:00                                         # Max wall time 
 #SBATCH --ntasks=1                                              # Number of tasks per job
 #SBATCH --cpus-per-task=1                                       # CPUs per task
 #SBATCH --mem=5G                                                # Units [K|M|G|T]
-#SBATCH --array=16                                             # Array range --> specifies the range of participants
+#SBATCH --array=2                                               # Array range --> specifies the range of participants
 #SBATCH --mail-user=richard.lohr@gmx.de                         # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                              # Notify on start, finish, and failure
 
