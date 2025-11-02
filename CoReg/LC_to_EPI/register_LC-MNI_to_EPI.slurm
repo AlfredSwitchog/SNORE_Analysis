@@ -4,12 +4,15 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --job-name=register_LC-MNI_to_EPI
 #SBATCH --output=slurm-%j.out
-
+#SBATCH --mail-user=richard.lohr@gmx.de                                 
+#SBATCH --mail-type=BEGIN,END,FAIL
 
 # example script for using ANTs for registraiton & normalisation!
 # authour: yeo-jin yi (alex; for further questions, mailto: yeo-jin.yi.15@ucl.ac.uk)
 
 # dependencies : ANTs (https://stnava.github.io/ANTs/)
+
+module load ants
 
 # subject ID
 ID=16
