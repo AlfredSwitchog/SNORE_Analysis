@@ -16,7 +16,7 @@ function SNORE_preprocessing(participant_id)
     env = 'local';  % <-- Change this to the appropriate environment
     
     if strcmpi(env, 'local')
-        scriptpath  = '/Users/Richard/Masterabeit_local/SNORE_Analysis/PreProc';
+        scriptpath  = '/Users/Richard/Masterabeit_local/Scripts/SNORE_PreProc';
         generalpath = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev';
         outputpath  = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
         spm_path    = '/Users/Richard/MatLAB/spm12_dev';
@@ -43,7 +43,6 @@ function SNORE_preprocessing(participant_id)
 
     % Add scriptpath
     addpath([scriptpath '/nc_SPM_process']);
-    addpath(scriptpath);
 
     %% Set study parameters
     TR = 2.5; % Repetition time (s)
@@ -74,8 +73,8 @@ function SNORE_preprocessing(participant_id)
     %% Realign only
     OutDir_nifti = fullfile(outputpath, num2str(participant_id), 'nifti_raw');
     OutDir_r = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/Realign');
-    if ~exist(OutDir_r, 'dir')
-       mkdir(OutDir_r);
+    if ~exist(OutDir_Realign, 'dir')
+       mkdir(OutDir_Realign);
     end
     cd(OutDir_r)
 
@@ -105,7 +104,7 @@ function SNORE_preprocessing(participant_id)
        mkdir(OutDir);
     end
 
-    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir_a, '^ar*.nii'));
+    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir_a, '^ar*'));
     nc_SmoothSPM(filesSmoothing,Smoothingkernel)
 
     %% Save progress

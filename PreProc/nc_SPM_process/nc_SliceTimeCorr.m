@@ -16,7 +16,7 @@ function nc_SliceTimeCorr(data,nslices,TR, sliceTimingFile)
 matlabbatch{1}.spm.temporal.st.scans = {data}; %data as cellstr
 matlabbatch{1}.spm.temporal.st.nslices = nslices; %read from config section
 matlabbatch{1}.spm.temporal.st.tr = TR;
-matlabbatch{1}.spm.temporal.st.ta = TR-TR/nslices;
+matlabbatch{1}.spm.temporal.st.ta = 2.4125;
 matlabbatch{1}.spm.temporal.st.so = sliceTimingFile; %individual slice timing information
 matlabbatch{1}.spm.temporal.st.refslice = nslices/2; %reference slice is the middle slice
 matlabbatch{1}.spm.temporal.st.prefix = 'a';
