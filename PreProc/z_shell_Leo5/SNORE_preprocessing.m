@@ -13,7 +13,7 @@ function SNORE_preprocessing(participant_id)
     fprintf('Processing participant %d\n', participant_id);
 
     %% Set environment: 'local', 'leo5_prod', or 'leo5_test'
-    env = 'local';  % <-- Change this to the appropriate environment
+    env = 'leo5_prod';  % <-- Change this to the appropriate environment
     
     if strcmpi(env, 'local')
         scriptpath  = '/Users/Richard/Masterabeit_local/SNORE_Analysis/PreProc';
@@ -72,7 +72,7 @@ function SNORE_preprocessing(participant_id)
     
     %convertDicomDir2Nifti(archiveData, OutDir);
     %% Realign only
-    OutDir = fullfile(outputpath, num2str(participant_id), 'nifti_raw');
+    OutDir = fullfile(outputpath, num2str(participant_id), 'nifti_raw_2');
     %OutDir_r = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/Realign');
 
     filesRealign = cellstr(spm_select('FPList', OutDir, '^MF.*\.nii$'));
