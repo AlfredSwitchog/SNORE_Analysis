@@ -1,8 +1,11 @@
 #!/bin/bash
-#SBATCH --time=00:30:00
-#SBATCH --mem=8G
+#SBATCH --output=job_%A_%a.out                                          # Output file (%A = job ID, %a = array task ID)
+#SBATCH --error=job_%A_%a.err                                           # Error file
+#SBATCH --time=168:00:00
+#SBATCH --mem=30G
 #SBATCH --job-name=register_LC-MNI_to_EPI
-#SBATCH --output=slurm-%j.out
+#SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
+#SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
 
 
 # example script for using ANTs for registraiton & normalisation!
