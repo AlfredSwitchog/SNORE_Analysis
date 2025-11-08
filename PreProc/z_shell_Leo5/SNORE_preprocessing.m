@@ -72,23 +72,16 @@ function SNORE_preprocessing(participant_id)
     
     %convertDicomDir2Nifti(archiveData, OutDir);
     %% Realign only
-    OutDir_nifti = fullfile(outputpath, num2str(participant_id), 'nifti_raw');
-    OutDir_r = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/Realign');
-    if ~exist(OutDir_r, 'dir')
-       mkdir(OutDir_r);
-    end
-    cd(OutDir_r)
+    OutDir = fullfile(outputpath, num2str(participant_id), 'nifti_raw');
+    %OutDir_r = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/Realign');
 
-    filesRealign = cellstr(spm_select('FPList', OutDir_nifti, '.nii'));
+    filesRealign = cellstr(spm_select('FPList', OutDir, '^MF.*\.nii$'));
     nc_Realign(filesRealign);
 
     %% Slice Timing Correction
-    OutDir_a = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/SliceTime');
-    if ~exist(OutDir_a, 'dir')
-       mkdir(OutDir_a);
-    end
+    %OutDir_a = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/SliceTime');
 
-    filesSliceTiming = cellstr(spm_select('ExtFPList', OutDir_r, '^r*.nii'));
+    filesSliceTiming = cellstr(spm_select('ExtFPList', OutDir, '^r.*\.nii$'));
     
     %load slice timing information from exact slice timing aquired from
     %json sidecar after running dcm2niix
@@ -100,12 +93,8 @@ function SNORE_preprocessing(participant_id)
     
 
     %% Smoothing
-    OutDir_s3 = fullfile(outputpath, num2str(participant_id), 'SPM_preproc/Smoothing');
-    if ~exist(OutDir, 'dir')
-       mkdir(OutDir);
-    end
 
-    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir_a, '^ar*.nii'));
+    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir, '^ar.*\.nii$'));
     nc_SmoothSPM(filesSmoothing,Smoothingkernel)
 
     %% Save progress
