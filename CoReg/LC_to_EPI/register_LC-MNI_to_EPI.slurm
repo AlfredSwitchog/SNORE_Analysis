@@ -1,24 +1,23 @@
 #!/bin/bash
-#SBATCH --time=06:00:00
-#SBATCH --mem=16G
-#SBATCH --cpus-per-task=8
+#SBATCH --output=job_%A_%a.out                                          # Output file (%A = job ID, %a = array task ID)
+#SBATCH --error=job_%A_%a.err                                           # Error file
+#SBATCH --time=168:00:00
+#SBATCH --mem=30G
 #SBATCH --job-name=register_LC-MNI_to_EPI
-#SBATCH --output=slurm-%j.out
-#SBATCH --mail-user=richard.lohr@gmx.de                                 
-#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
+#SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
+
 
 # example script for using ANTs for registraiton & normalisation!
 # authour: yeo-jin yi (alex; for further questions, mailto: yeo-jin.yi.15@ucl.ac.uk)
 
 # dependencies : ANTs (https://stnava.github.io/ANTs/)
 
-module load ants
-
 # subject ID
 ID=16
 
 # set paths
-path_parent=/scratch/c7201319/SNORE_MR_out # your root directory
+path_parent=/Users/Richard/Masterabeit_local/SNORE_MR_out # your root directory
 path_output=/scratch/c7201319/SNORE_MRI_data_dev_out/${ID}/regis_LC_mask_to_EPI/LC_MNI_to_EPI # where should your outputs go?
 
 mkdir -p "${path_output}"
@@ -43,7 +42,7 @@ antsRegistrationSyN.sh -d 3 -t r -m $img_moving -f $img_fixed -o ${path_output}/
 # now, apply transformations from the above steps to move mni to mean functional. remember, -t switch indicates transformation files, and the order of input is important! you put the warps before affine matrices, and transformations closer to the destination image earlier than that related to the moving image
 
 # MNI -> mean functional
-img_moving=/scratch/c7201319/SNORE_LC_Masks/MNI_Space/mni_icbm152_LCmetaMask_final.nii
+img_moving=/Users/Richard/Masterabeit_local/SNORE_LC-Masks/MNI_Space/mni_icbm152_LCmetaMask_final.nii
 img_fixed=$img_reference
 
 antsApplyTransforms -d 3 -v 0 -n BSpline[4] -t ${path_output}/reg_anat2meanfunc_0GenericAffine.mat -t ${path_output}/NLreg_mni2anat_1Warp.nii.gz -t ${path_output}/NLreg_mni2anat_0GenericAffine.mat -i $img_moving -r $img_fixed -o ${path_output}/NLreg_MNI_to_meanfunc.nii.gz
