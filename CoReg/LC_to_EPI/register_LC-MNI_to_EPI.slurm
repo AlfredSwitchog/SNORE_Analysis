@@ -12,7 +12,7 @@
 # authour: yeo-jin yi (alex; for further questions, mailto: yeo-jin.yi.15@ucl.ac.uk)
 
 # dependencies : ANTs (https://stnava.github.io/ANTs/)
-
+module purge
 module load ants
 
 # subject ID
