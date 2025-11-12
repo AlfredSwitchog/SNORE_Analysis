@@ -14,8 +14,8 @@ OUTPUT_DIR="$2"
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
-# Loop through all files starting with "s3a" and ending in .nii or .nii.gz
-for FILE in "$INPUT_DIR"/s3ua*.nii; do
+# Loop through all files starting with "r" and ending in .nii or .nii.gz --> files after realignment
+for FILE in "$INPUT_DIR"/r*.nii; do
   # Get base filename without extension
   BASENAME=$(basename "$FILE")
   BASENAME_NOEXT="${BASENAME%%.*}"  # Remove everything after first dot
