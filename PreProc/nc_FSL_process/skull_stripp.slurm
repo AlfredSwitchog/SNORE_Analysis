@@ -19,7 +19,7 @@ PARTICIPANT_ID=${SLURM_ARRAY_TASK_ID}
 
 # Construct path to the functional directory
 FUNC_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/nifti_raw_2"
-OUT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/skull_strip"
+OUT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/skull_stripp"
 
 # Check if directory exists
 if [[ -d "$FUNC_DIR" ]]; then
