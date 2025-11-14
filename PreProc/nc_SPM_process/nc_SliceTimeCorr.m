@@ -19,7 +19,7 @@ matlabbatch{1}.spm.temporal.st.tr = TR;
 matlabbatch{1}.spm.temporal.st.ta = 2.4125;
 matlabbatch{1}.spm.temporal.st.so = sliceTimingFile; %individual slice timing information
 matlabbatch{1}.spm.temporal.st.refslice = nslices/2; %reference slice is the middle slice
-matlabbatch{1}.spm.temporal.st.prefix = 'a';
+matlabbatch{1}.spm.temporal.st.prefix = 'a_';
 
 spm_jobman('run', matlabbatch);
 clear matlabbatch

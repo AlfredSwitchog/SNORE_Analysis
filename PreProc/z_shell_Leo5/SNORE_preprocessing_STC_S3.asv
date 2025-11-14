@@ -78,14 +78,10 @@ function SNORE_preprocessing_STC_S3(participant_id)
     %filesRealign = cellstr(spm_select('FPList', OutDir, '^MF.*\.nii$'));
     %nc_Realign(filesRealign);
 
-    %% Unzipp the output from FSL and remove the compressed .gz files
+    %% Slice Timing Correction
     OutDir = fullfile(outputpath, num2str(participant_id), 'skull_stripp');
 
-    unzip_nii_gz(OutDir, true)
-
-    %% Slice Timing Correction
-
-    filesSliceTiming = cellstr(spm_select('FPList', OutDir, 'brain_r.*\.nii$'));
+    filesSliceTiming = cellstr(spm_select('ExtFPList', OutDir, '^brain_r.*\.nii$'));
     
     %load slice timing information from exact slice timing aquired from
     %json sidecar after running dcm2niix
@@ -95,9 +91,10 @@ function SNORE_preprocessing_STC_S3(participant_id)
     %run slice time correction
     nc_SliceTimeCorr(filesSliceTiming, nslices, TR, silceTimingArray);
     
+
     %% Smoothing
 
-    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir, '^a_.*\.nii$'));
+    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir, '^ar.*\.nii$'));
     nc_SmoothSPM(filesSmoothing,Smoothingkernel)
 
     %% Save progress
