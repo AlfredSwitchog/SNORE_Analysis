@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=mean_func_array
-#SBATCH --output=mean_func_%A_%a.out
-#SBATCH --error=mean_func_%A_%a.err
-#SBATCH --time=00:15:00
-#SBATCH --mem=10G
+#SBATCH --job-name=skull_stripp
+#SBATCH --output=skull_stripp_%A_%a.out
+#SBATCH --error=skull_stripp_%A_%a.err
+#SBATCH --time=02:00:00
+#SBATCH --mem=20G
 #SBATCH --cpus-per-task=1
 #SBATCH --array=16
 #SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
