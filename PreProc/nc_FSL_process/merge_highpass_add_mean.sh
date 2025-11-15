@@ -1,6 +1,6 @@
 #!/bin/bash
-# Merge all NIfTIs in a folder, high-pass filter with mean added back, and write to ./highpass
-# Usage: ./merge_highpass.sh <input_folder>
+# Merge all NIfTIs in a folder, high-pass filter with mean added back, and write to ../preprocessing/highpass
+# Usage: ./merge_highpass_add_mean.sh <input_folder>
 
 set -e
 
@@ -10,12 +10,14 @@ if [[ -z "$IN_DIR" ]]; then
   exit 1
 fi
 
-# Make output dir
-OUT_DIR="${IN_DIR%/}/highpass"
+# Determine the preprocessing base (one level up)
+PREPROC_DIR="$(dirname "$IN_DIR")"
+
+# Output folder inside preprocessing
+OUT_DIR="${PREPROC_DIR}/highpass"
 mkdir -p "$OUT_DIR"
 
 # Grab the first functional file to infer the prefix (everything up to the first '-')
-# Handles both .nii and .nii.gz
 FIRST_FILE="$(find "$IN_DIR" -maxdepth 1 -type f -name 's3a_brain_r*.nii*' | sort | head -n 1)"
 if [[ -z "$FIRST_FILE" ]]; then
   echo "No files matching s3a_brain_r*.nii* found in: $IN_DIR"
@@ -23,7 +25,7 @@ if [[ -z "$FIRST_FILE" ]]; then
 fi
 
 BASE="$(basename "$FIRST_FILE")"
-PREFIX="${BASE%%-*}"                      # e.g., s3a_brain_rMFCR00TS031024
+PREFIX="${BASE%%-*}"  # e.g., s3a_brain_rMFCR00TS031024
 
 MERGED="${OUT_DIR}/${PREFIX}_merged.nii.gz"
 MEAN="${OUT_DIR}/${PREFIX}_mean.nii.gz"

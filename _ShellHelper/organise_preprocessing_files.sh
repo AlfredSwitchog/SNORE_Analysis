@@ -16,7 +16,7 @@ OUT_BASE="${BASE}/preprocessing"
 OUT_SKULL="${OUT_BASE}/skull_stripp"
 OUT_REALIGN="${OUT_BASE}/reallign"
 OUT_STC="${OUT_BASE}/slice_time_correction"
-OUT_SMOOTH="${OUT_BASE}/smoothing"
+OUT_SMOOTH="${OUT_BASE}/smooth"
 
 # Create output directories
 mkdir -p "$OUT_SKULL" "$OUT_REALIGN" "$OUT_STC" "$OUT_SMOOTH"
@@ -37,7 +37,7 @@ mv "$IN_SKULL"/brain_* "$OUT_SKULL"/ 2>/dev/null || true
 echo "Moving a_brain_*.nii* to $OUT_STC"
 mv "$IN_SKULL"/a_brain_*.nii* "$OUT_STC"/ 2>/dev/null || true
 
-# 3) s3a_* -> preprocessing/smoothing
+# 3) s3a_* -> preprocessing/smooth
 echo "Moving s3a_* to $OUT_SMOOTH"
 mv "$IN_SKULL"/s3a_* "$OUT_SMOOTH"/ 2>/dev/null || true
 
