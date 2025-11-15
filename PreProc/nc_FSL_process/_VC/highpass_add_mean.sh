@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Function: Merge all niftis to a 4D file and add a highpass filter (with mean added back to it)
+
 #Usage example: ./highpass_add_mean.sh /Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged
 
 # Check if folder path is provided
