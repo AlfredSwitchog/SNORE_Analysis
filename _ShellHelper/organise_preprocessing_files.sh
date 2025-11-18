@@ -44,6 +44,8 @@ mv "$IN_SKULL"/s3a_* "$OUT_SMOOTH"/ 2>/dev/null || true
 # 4) r*.nii* from nifti_raw_2 -> preprocessing/reallign
 echo "Moving r*.nii* from nifti_raw_2 to $OUT_REALIGN"
 mv "$IN_REALIGN"/r*.nii* "$OUT_REALIGN"/ 2>/dev/null || true
+mv "$IN_REALIGN"/mean*.nii* "$OUT_REALIGN"/ 2>/dev/null || true #mean EPI also moved
+
 
 echo
 echo "Done. Output structure:"
