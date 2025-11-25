@@ -1,6 +1,6 @@
 %% ========= SETTINGS =========
-input_dir    = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Raw_Signal_cleaned';
-output_dir   = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Raw_Signal_cleaned_mean';
+input_dir    = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
+output_dir   = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data/Average';
 subject_indices = [];   % [] = process all; e.g., [1] or [3 7] for quick tests
 %% ===========================
 

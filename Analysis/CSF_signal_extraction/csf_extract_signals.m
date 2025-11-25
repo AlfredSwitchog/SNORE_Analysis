@@ -13,6 +13,7 @@ switch lower(env)
         main_dir   = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out';
         spm_path   = '/Users/Richard/MatLAB/spm12_dev';
         output_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
+        script_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Analysis/CSF_signal_extraction';
     case 'leo5_prod'
         main_dir   = '/scratch/c7201319/SNORE_MR_out';
         spm_path   = '/scratch/c7201319/spm12_dev';
