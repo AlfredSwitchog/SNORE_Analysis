@@ -33,7 +33,7 @@ participant_path = fullfile(main_dir, participant_id);
 
 try
     %% === Load functional file ===
-    func_folder = fullfile(participant_path, 'func_merged');
+    func_folder = fullfile(participant_path, 'preprocessing/highpass');
     func_file = dir(fullfile(func_folder, 'hp_s3a_brain_r*.nii'));
 
     if isempty(func_file)
@@ -43,7 +43,7 @@ try
         end
         fprintf('Unzipping functional file: %s\n', gz_func_file(1).name);
         gunzip(fullfile(func_folder, gz_func_file(1).name));
-        func_file = dir(fullfile(func_folder, 's3ua_*.nii'));
+        func_file = dir(fullfile(func_folder, 'hp_s3a_brain_r*.nii'));
     end
 
     img_file = fullfile(func_folder, func_file(1).name);
