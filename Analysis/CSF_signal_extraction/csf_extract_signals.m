@@ -5,8 +5,8 @@ if isnumeric(participant_id)
     participant_id = num2str(participant_id);
 end
 %% === Configuration ===
-env = 'leo5_prod';  % change to 'local' if testing locally
-num_slices = 20;
+env = 'local';  % change to 'local' if testing locally
+num_slices = 4;
 
 switch lower(env)
     case 'local'
@@ -16,7 +16,7 @@ switch lower(env)
     case 'leo5_prod'
         main_dir   = '/scratch/c7201319/SNORE_MR_out';
         spm_path   = '/scratch/c7201319/spm12_dev';
-        output_dir = '/scratch/c7201319/SNORE_CSF_Data/Raw_Signal';
+        output_dir = '/scratch/c7201319/SNORE_CSF_Data/20251125_Raw_Signal';
         script_dir = '/scratch/c7201319/SNORE_Analysis/Analysis/CSF_signal_extraction';
     otherwise
         error('Unknown environment "%s".', env);
@@ -34,10 +34,10 @@ participant_path = fullfile(main_dir, participant_id);
 try
     %% === Load functional file ===
     func_folder = fullfile(participant_path, 'func_merged');
-    func_file = dir(fullfile(func_folder, 's3ua_*.nii'));
+    func_file = dir(fullfile(func_folder, 'hp_s3a_brain_r*.nii'));
 
     if isempty(func_file)
-        gz_func_file = dir(fullfile(func_folder, 's3ua_*.nii.gz'));
+        gz_func_file = dir(fullfile(func_folder, 'hp_s3a_brain_r*.nii.gz'));
         if isempty(gz_func_file)
             error('No functional file found for participant %s.', participant_id);
         end
