@@ -1,6 +1,9 @@
 #!/bin/bash
 
 # Function: count DICOM files and compare with NIfTI conversion folder
+# run with all participants: ./count_dicom_files_and_compare_to_nifti.sh
+#run with subset mode: ./count_dicom_files_and_compare_to_nifti.sh subset 1 3 17 19 22 34 47 57 60 64
+  
 
 DICOM_BASE="/scratch/c7201319/SNORE_MRI"
 NIFTI_BASE="/scratch/c7201319/SNORE_MR_out"
