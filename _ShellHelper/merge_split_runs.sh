@@ -1,40 +1,49 @@
 #!/bin/bash
 
-# Usage: ./merge_split_runs.sh <participant_id>
-# Example: ./merge_split_runs.sh 9
+# Usage: ./merge_split_runs.sh <participant_id> <num_sleep_dirs>
+# Example: ./merge_split_runs.sh 1 3
+# For 3 dirs:
+#   MR ep2d_bold_samba_2mm_sleep
+#   MR ep2d_bold_samba_2mm_sleep-2
+#   MR ep2d_bold_samba_2mm_sleep-3
 
 set -euo pipefail
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <participant_id>"
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <participant_id> <num_sleep_dirs>"
     exit 1
 fi
 
 PARTICIPANT="$1"
+NUM_SPLITS="$2"
 
-# Adjust this base path if needed
-BASE="/scratch/c7201319/SNORE_MRI"
-
-PART_DIR="${BASE}/${PARTICIPANT}"
-
-RUN1_DIR="${PART_DIR}/Night/MR ep2d_bold_samba_2mm_sleep"
-RUN2_DIR="${PART_DIR}/Night/MR ep2d_bold_samba_2mm_sleep-2"
-MERGED_DIR="${PART_DIR}/Night/MR ep2d_bold_samba_2mm_sleep_merged"
-
-echo "Participant: ${PARTICIPANT}"
-echo "Run 1 dir:   ${RUN1_DIR}"
-echo "Run 2 dir:   ${RUN2_DIR}"
-echo "Merged dir:  ${MERGED_DIR}"
-echo
-
-# Basic checks
-if [ ! -d "$RUN1_DIR" ]; then
-    echo "ERROR: Run 1 directory not found: $RUN1_DIR"
+if ! [[ "$NUM_SPLITS" =~ ^[0-9]+$ ]] || [ "$NUM_SPLITS" -lt 1 ]; then
+    echo "ERROR: <num_sleep_dirs> must be a positive integer"
     exit 1
 fi
 
-if [ ! -d "$RUN2_DIR" ]; then
-    echo "ERROR: Run 2 directory not found: $RUN2_DIR"
+# 🔧 Adjust base path if needed
+BASE="/scratch/c7201319/SNORE_MRI"
+
+# If "Night" is always part of the path, keep this:
+PART_DIR="${BASE}/${PARTICIPANT}/Night"
+
+RUN_BASE_NAME="MR ep2d_bold_samba_2mm_sleep"
+MERGED_DIR="${PART_DIR}/${RUN_BASE_NAME}_merged"
+
+echo "Participant: ${PARTICIPANT}"
+echo "Base dir:   ${PART_DIR}"
+echo "Merged dir: ${MERGED_DIR}"
+echo "Number of split dirs: ${NUM_SPLITS}"
+echo
+
+# --- 1) First run (without suffix) ---
+
+RUN1_DIR="${PART_DIR}/${RUN_BASE_NAME}"
+
+echo "Checking first run: ${RUN1_DIR}"
+if [ ! -d "$RUN1_DIR" ]; then
+    echo "ERROR: Run 1 directory not found: $RUN1_DIR"
     exit 1
 fi
 
@@ -51,35 +60,57 @@ if [ -z "${LAST_FILE:-}" ]; then
     exit 1
 fi
 
-BN=$(basename "$LAST_FILE")          # e.g. MR001090.dcm
-NUM_STR=${BN#MR}                     # 001090.dcm
-NUM_STR=${NUM_STR%.dcm}              # 001090
-WIDTH=${#NUM_STR}                    # number of digits
-LAST_INDEX=$((10#$NUM_STR))          # numeric value (avoid octal)
+BN=$(basename "$LAST_FILE")     # e.g. MR001178.dcm
+NUM_STR=${BN#MR}                # 001178.dcm
+NUM_STR=${NUM_STR%.dcm}         # 001178
+WIDTH=${#NUM_STR}               # number of digits (e.g. 6)
+LAST_INDEX=$((10#$NUM_STR))     # numeric value (avoid octal)
 NEXT_INDEX=$((LAST_INDEX + 1))
 
 echo "Last file after run 1: $BN (index $LAST_INDEX, width $WIDTH)"
-echo "Starting run 2 at index: $NEXT_INDEX"
+echo "Starting additional runs at index: $NEXT_INDEX"
 echo
 
-echo "Renaming and copying second run into merged folder..."
+shopt -s nullglob
 
-# Loop over run 2 files in sorted order
-for FILE in $(ls "$RUN2_DIR"/MR*.dcm | sort); do
-    printf -v NEW_NUM "%0${WIDTH}d" "$NEXT_INDEX"
-    NEW_NAME="MR${NEW_NUM}.dcm"
+# --- 2) Process split runs 2 .. NUM_SPLITS ---
 
-    # Copy or move (currently copy for safety)
-    cp "$FILE" "${MERGED_DIR}/${NEW_NAME}"
+for (( i=2; i<=NUM_SPLITS; i++ )); do
+    RUN_DIR="${PART_DIR}/${RUN_BASE_NAME}-${i}"
+    echo "Processing split run ${i}: ${RUN_DIR}"
 
-    # If you really want to MOVE instead of copy, use this instead:
-    # mv "$FILE" "${MERGED_DIR}/${NEW_NAME}"
+    if [ ! -d "$RUN_DIR" ]; then
+        echo "ERROR: Expected split directory not found: $RUN_DIR"
+        exit 1
+    fi
 
-    echo "  $(basename "$FILE") -> ${NEW_NAME}"
+    FILES=( "$RUN_DIR"/MR*.dcm )
 
-    NEXT_INDEX=$((NEXT_INDEX + 1))
+    if [ ${#FILES[@]} -eq 0 ]; then
+        echo "  WARNING: No MR*.dcm files found in $RUN_DIR, skipping."
+        continue
+    fi
+
+    # Ensure deterministic order
+    IFS=$'\n' FILES_SORTED=( $(printf '%s\n' "${FILES[@]}" | sort) )
+    unset IFS
+
+    for FILE in "${FILES_SORTED[@]}"; do
+        printf -v NEW_NUM "%0${WIDTH}d" "$NEXT_INDEX"
+        NEW_NAME="MR${NEW_NUM}.dcm"
+
+        # Copy or move:
+        cp "$FILE" "${MERGED_DIR}/${NEW_NAME}"
+        # If you want to MOVE instead of copy, use:
+        # mv "$FILE" "${MERGED_DIR}/${NEW_NAME}"
+
+        echo "  $(basename "$FILE") -> ${NEW_NAME}"
+
+        NEXT_INDEX=$((NEXT_INDEX + 1))
+    done
+
+    echo
 done
 
-echo
 echo "Done. Merged run saved in:"
 echo "  $MERGED_DIR"

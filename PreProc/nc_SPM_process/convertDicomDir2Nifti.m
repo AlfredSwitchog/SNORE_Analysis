@@ -7,6 +7,12 @@
 
 function convertDicomDir2Nifti(dicom_folder, output_folder)
 
+
+% Add SPM
+spm_path    = '/scratch/c7201319/spm12_dev';
+addpath(spm_path)
+fprintf('SPM used: %s\n', spm_path);
+
 % Initialize SPM
 spm('Defaults', 'fMRI');
 spm_jobman('initcfg');
