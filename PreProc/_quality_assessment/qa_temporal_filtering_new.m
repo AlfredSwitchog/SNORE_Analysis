@@ -1,6 +1,6 @@
 % --- Settings ---
-merged_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/merged_func.nii';     % Your 4D merged data
-filtered_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/7/func_merged/s3ua_hp_add_mean_func.nii';     % Your 4D filtered data
+merged_file = '/Users/Richard/Documents/SNORE_QC/26/preprocessing/highpass/s3brain_a_rMFVE04LM191124_merged_mid10.nii.gz';     % Your 4D merged data
+filtered_file = '/Users/Richard/Documents/SNORE_QC/26/preprocessing/highpass/hp_s3brain_a_rMFVE04LM191124_mid10.nii.gz';     % Your 4D filtered data
 TR = 2.5;
 
 %% --- Load 4D data ---
