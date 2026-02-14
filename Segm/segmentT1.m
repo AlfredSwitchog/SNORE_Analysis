@@ -31,10 +31,10 @@ function segmentT1(participant_id)
     T1dir_out = [structFileBase_out, num2str(participant_id), structFileEnding_out];
     
     % Convert to nifti
-     convertDicomDir2Nifti(T1dir, T1dir_out);
+     %convertDicomDir2Nifti(T1dir, T1dir_out);
     
     % select struct file as nifti
-    structfile = spm_select('ExtFPList', T1dir_out , '^.*\.nii$');
+    structfile = spm_select('ExtFPList', T1dir_out , '^T1_MF.*\.nii$'); 
     
     % run segmentation
     nc_segmentation(structfile, spm_path, 30)

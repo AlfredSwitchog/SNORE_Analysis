@@ -25,7 +25,9 @@ if strcmp(ext, '.gz')
     error('Please unzip the T1 and c1/c2/c3 first (no .nii.gz).');
 end
 
-addpath('/path/to/spm12');  % or ensure SPM is already on path
+% Add SPM
+spm_path = '/scratch/c7201319/spm12_dev';
+addpath(spm_path)
 
 % --- adjust this if your segmentations use another base prefix ---
 core_prefix = 'MF';   % e.g. c1MFCR00TS... / c2MFCR00TS... / c3MFCR00TS...

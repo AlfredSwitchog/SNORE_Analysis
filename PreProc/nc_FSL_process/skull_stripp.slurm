@@ -1,11 +1,11 @@
 #!/bin/bash
 #SBATCH --job-name=skull_stripp
-#SBATCH --output=skull_stripp_%A_%a.out
-#SBATCH --error=skull_stripp_%A_%a.err
-#SBATCH --time=02:00:00
+#SBATCH --output=./_output_errors/skull_stripp_%A_%a.out
+#SBATCH --error=./_output_errors/skull_stripp_%A_%a.err
+#SBATCH --time=02:30:00
 #SBATCH --mem=10G
 #SBATCH --cpus-per-task=1
-#SBATCH --array=16
+#SBATCH --array=1,2,3,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,101
 #SBATCH --mail-user=richard.lohr@gmx.de                                 # set email adress for notifications
 #SBATCH --mail-type=BEGIN,END,FAIL                                      # Notify on start, finish, and failure
 
@@ -18,7 +18,7 @@ module load fsl
 PARTICIPANT_ID=${SLURM_ARRAY_TASK_ID}
 
 # Construct path to the functional directory
-FUNC_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/nifti_raw_2"
+FUNC_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/nifti_raw"
 OUT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/skull_stripp"
 
 # Check if directory exists

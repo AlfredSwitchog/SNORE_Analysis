@@ -1,6 +1,7 @@
 function SNORE_preprocessing_STC_S3(participant_id)
     %% ******************************************* %%
-    % Pipeline preproc - SNORE Part 2. After Skull stripping
+    % Pipeline preproc - SNORE Part 2. After Skull stripping. Smoothing
+    % with a 3x3x3 Kernel
     %
     % Richard Lohr 15012025
     % version 1: Initial version
@@ -85,19 +86,19 @@ function SNORE_preprocessing_STC_S3(participant_id)
 
     %% Slice Timing Correction
 
-    filesSliceTiming = cellstr(spm_select('FPList', OutDir, 'brain_r.*\.nii$'));
+    %filesSliceTiming = cellstr(spm_select('FPList', OutDir, 'brain_r.*\.nii$'));
     
     %load slice timing information from exact slice timing aquired from
     %json sidecar after running dcm2niix
-    sliceTimingFile = load([scriptpath '/nc_SPM_process/SNORE_Night_slice_times.mat']);
-    silceTimingArray = sliceTimingFile.sliceTimes; %extract the array of the struct
+    %sliceTimingFile = load([scriptpath '/nc_SPM_process/SNORE_Night_slice_times.mat']);
+    %silceTimingArray = sliceTimingFile.sliceTimes; %extract the array of the struct
     
     %run slice time correction
-    nc_SliceTimeCorr(filesSliceTiming, nslices, TR, silceTimingArray);
+    %nc_SliceTimeCorr(filesSliceTiming, nslices, TR, silceTimingArray);
     
     %% Smoothing
 
-    filesSmoothing = cellstr(spm_select('ExtFPList', OutDir, '^a_.*\.nii$'));
+    filesSmoothing = cellstr(spm_select('FPList', OutDir, 'brain_a_r.*\.nii$'));
     nc_SmoothSPM(filesSmoothing,Smoothingkernel)
 
     %% Save progress

@@ -14,18 +14,18 @@ OUTPUT_DIR="$2"
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
-# Loop through all files starting with "r" and ending in .nii or .nii.gz --> files after realignment
-for FILE in "$INPUT_DIR"/r*.nii; do
+# Loop through all files starting with "a" and ending in .nii or .nii.gz --> files after realignment
+for FILE in "$INPUT_DIR"/a*.nii; do
   # Get base filename without extension
   BASENAME=$(basename "$FILE")
   BASENAME_NOEXT="${BASENAME%%.*}"  # Remove everything after first dot
 
   OUTPUT_FILE="${OUTPUT_DIR}/brain_${BASENAME_NOEXT}.nii"
 
-  echo "Skull stripping $FILE → $OUTPUT_FILE"
+  echo "Skull stripping $FILE -> OUTPUT_FILE"
   
-  # Run FSL's bet2 with -f 0.3
-  bet2 "$FILE" "$OUTPUT_FILE" -f 0.3
+  # Run FSL's bet2 with -f 0.1
+  bet2 "$FILE" "$OUTPUT_FILE" -f 0.1
 done
 
 echo "Skull stripping complete. Output saved in $OUTPUT_DIR"

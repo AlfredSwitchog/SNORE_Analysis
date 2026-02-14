@@ -18,14 +18,14 @@ OUT_DIR="${PREPROC_DIR}/highpass"
 mkdir -p "$OUT_DIR"
 
 # Grab the first functional file to infer the prefix (everything up to the first '-')
-FIRST_FILE="$(find "$IN_DIR" -maxdepth 1 -type f -name 's3a_brain_r*.nii*' | sort | head -n 1)"
+FIRST_FILE="$(find "$IN_DIR" -maxdepth 1 -type f -name 's3brain_a_r*.nii*' | sort | head -n 1)"
 if [[ -z "$FIRST_FILE" ]]; then
-  echo "No files matching s3a_brain_r*.nii* found in: $IN_DIR"
+  echo "No files matching s3brain_a_r*.nii* found in: $IN_DIR"
   exit 1
 fi
 
 BASE="$(basename "$FIRST_FILE")"
-PREFIX="${BASE%%-*}"  # e.g., s3a_brain_rMFCR00TS031024
+PREFIX="${BASE%%-*}"  # e.g., s3brain_a_rMFCR00TS031024
 
 MERGED="${OUT_DIR}/${PREFIX}_merged.nii.gz"
 MEAN="${OUT_DIR}/${PREFIX}_mean.nii.gz"
@@ -40,7 +40,7 @@ echo "Highpass file:  $HP_OUT"
 
 # 1) Merge all volumes
 echo "Merging volumes..."
-fslmerge -t "$MERGED" "$IN_DIR"/s3a_brain_r*.nii*
+fslmerge -t "$MERGED" "$IN_DIR"/s3brain_a_r*.nii*
 
 # 2) Compute mean
 echo "Computing mean..."
