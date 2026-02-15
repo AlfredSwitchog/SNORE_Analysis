@@ -1,4 +1,29 @@
 #!/bin/bash
+#
+# SNORE MRI Preprocessing QC Summary
+#
+# This script scans all numeric participant folders inside:
+#   /scratch/c7201319/SNORE_MR_out
+#
+# For each participant, it:
+#   - Counts NIfTI files (.nii / .nii.gz) in:
+#       • nifti_raw (non-recursive)
+#       • skull_stripp (non-recursive)
+#   - Automatically detects all subfolders inside preprocessing/
+#   - Counts NIfTI files recursively inside each preprocessing subfolder
+#
+# It then prints a formatted summary table with:
+#   - One row per participant
+#   - File counts for each preprocessing stage
+#   - A QC column ("OK" or "X")
+#
+# QC logic:
+#   The QC column is "OK" if all preprocessing subfolders contain
+#   the same number of NIfTI files, otherwise "X".
+#
+# Purpose:
+#   Quick consistency check of preprocessing output across subjects
+#   to detect missing or incomplete processing steps.
 
 ROOT="/scratch/c7201319/SNORE_MR_out"
 

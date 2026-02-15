@@ -4,7 +4,7 @@ set -euo pipefail
 BASE="/scratch/c7201319/SNORE_MR_out"
 
 # ---- SETTINGS ----
-DRYRUN=true   # set to false to actually delete
+DRYRUN=false   # set to false to actually delete
 # ------------------
 
 for subj_dir in "$BASE"/*; do

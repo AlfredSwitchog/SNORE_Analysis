@@ -14,7 +14,7 @@ OUTPUT_DIR="$2"
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
 
-# Loop through all files starting with "a" and ending in .nii or .nii.gz --> files after realignment
+# Loop through all files starting with "a" and ending in .nii or .nii.gz --> files after realignment (r) + STC (a)
 for FILE in "$INPUT_DIR"/a*.nii; do
   # Get base filename without extension
   BASENAME=$(basename "$FILE")

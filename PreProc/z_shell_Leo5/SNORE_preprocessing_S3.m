@@ -1,4 +1,4 @@
-function SNORE_preprocessing_STC_S3(participant_id)
+function SNORE_preprocessing_S3(participant_id)
     %% ******************************************* %%
     % Pipeline preproc - SNORE Part 2. After Skull stripping. Smoothing
     % with a 3x3x3 Kernel
