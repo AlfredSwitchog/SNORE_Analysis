@@ -2,8 +2,8 @@
 
 % --- specify volumes ---
 file1 = '/Users/Richard/Documents/20250216_SNORE_QC/29/meanEPI/meanMFHE97CF261124-0007-00001-000001.nii';
-file2 = '/Users/Richard/Documents/20250216_SNORE_QC/29/nifti_raw/MFHE97CF261124-0007-03281-003281.nii'; %Volume with cutting
-file3 = '/Users/Richard/Documents/20250216_SNORE_QC/29/nifti_raw/MFHE97CF261124-0007-00333-000333.nii'; %Volume without cutting
+file2 = '/Users/Richard/Documents/20250216_SNORE_QC/29/nifti_raw/MFHE97CF261124-0007-03281-003281.nii'; %Volume that will be cut after reallignment
+file3 = '/Users/Richard/Documents/20250216_SNORE_QC/29/nifti_raw/MFHE97CF261124-0007-00333-000333.nii'; %Volume that won't be cut after reallignment
 
 files = {file1, file2, file3};
 
