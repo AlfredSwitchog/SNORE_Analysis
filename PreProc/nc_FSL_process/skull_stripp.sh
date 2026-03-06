@@ -22,7 +22,7 @@ for FILE in "$INPUT_DIR"/a*.nii; do
 
   OUTPUT_FILE="${OUTPUT_DIR}/brain_${BASENAME_NOEXT}.nii"
 
-  echo "Skull stripping $FILE -> OUTPUT_FILE"
+  echo "Skull stripping $FILE -> OUTPUT_FILE $OUTPUT_FILE"
   
   # Run FSL's bet2 with -f 0.1
   bet2 "$FILE" "$OUTPUT_FILE" -f 0.1

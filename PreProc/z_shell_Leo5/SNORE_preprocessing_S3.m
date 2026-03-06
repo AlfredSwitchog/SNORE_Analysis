@@ -80,7 +80,7 @@ function SNORE_preprocessing_S3(participant_id)
     %nc_Realign(filesRealign);
 
     %% Unzipp the output from FSL and remove the compressed .gz files
-    OutDir = fullfile(outputpath, num2str(participant_id), 'skull_stripp');
+    OutDir = fullfile(outputpath, num2str(participant_id), '/preprocessing/skull_stripp');
 
     unzip_nii_gz(OutDir, true)
 

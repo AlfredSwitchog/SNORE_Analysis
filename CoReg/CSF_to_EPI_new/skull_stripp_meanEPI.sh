@@ -2,6 +2,9 @@
 
 BASE="/scratch/c7201319/SNORE_MR_out"
 
+module purge
+module load fsl
+
 for p in "$BASE"/*; do
   nifti_dir="$p/nifti_raw"
   [ -d "$nifti_dir" ] || continue
