@@ -7,8 +7,17 @@
 %   2) bar plot of z_metric across the run
 
 % --- paths ---
-mean_file = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/29/nifti_raw/meanMFHE97CF261124-0007-00001-000001.nii';
-raw_dir   = '/Users/Richard/Masterabeit_local/SNORE_MRI_data_dev_out/29/nifti_raw';
+mean_file = '/scratch/c7201319/SNORE_MR_out/4/meanEPI/meanMFIN02MS170624-0014-00001-000001.nii';
+raw_dir   = '/scratch/c7201319/SNORE_MR_out/4/nifti_raw';
+out_dir = '/scratch/c7201319/SNORE_MR_out/4/QC';
+
+if ~exist(out_dir,'dir')
+    mkdir(out_dir)
+end
+
+log_file = fullfile(out_dir,'z_extent_QC.txt');
+fid = fopen(log_file,'w');
+
 
 % --- get raw volumes ---
 files = spm_select('FPList', raw_dir, '^MF.*\.nii$');
@@ -16,6 +25,7 @@ nVol  = size(files,1);
 
 
 vol_names = cell(nVol,1);
+
 
 %% mean EPI z-extend
 V = spm_vol(mean_file);
@@ -76,9 +86,9 @@ end
 threshold = 1;
 frac_above = sum(z_metric > threshold) / nVol;
 
-fprintf('Mean EPI z-extend: %.2f mm\n', mean_z_extend);
-fprintf('Volumes with z_metric > %.2f: %d / %d\n', threshold, sum(z_metric > threshold), nVol);
-fprintf('Fraction: %.4f\n', frac_above);
+fprintf(fid,'Mean EPI z-extend: %.2f mm\n', mean_z_extend);
+fprintf(fid,'Volumes with z_metric > %.2f: %d / %d\n', threshold, sum(z_metric > threshold), nVol);
+fprintf(fid,'Fraction: %.4f\n', frac_above);
 
 %% plot
 figure;
@@ -94,3 +104,9 @@ xlabel('Volume')
 ylabel('z-extend metric (mm)')
 title(sprintf('z-extend metric | fraction >1 = %.3f',frac_above))
 grid on
+
+plot_file = fullfile(out_dir,'z_extent_plot.png');
+saveas(gcf, plot_file);
+
+fclose(fid);
+
