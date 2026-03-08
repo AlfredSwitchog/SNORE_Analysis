@@ -19,7 +19,7 @@ PARTICIPANT_ID=${SLURM_ARRAY_TASK_ID}
 
 # Construct path to the functional directory
 FUNC_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/preprocessing/slice_time_correction" #RL: Das müsste man wieder ändern (realign_STC Ergebnisse in nifti_raw folder) wenn man die originale pipline laufen lassen will
-OUT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/preprocessing/skull_stripp" #RL: Das müsste man wieder ändern wenn man die originale pipline laufen lassen will
+OUT_DIR="/scratch/c7201319/SNORE_MR_out/${PARTICIPANT_ID}/preprocessing/skull_stripp"
 
 # Check if directory exists
 if [[ -d "$FUNC_DIR" ]]; then

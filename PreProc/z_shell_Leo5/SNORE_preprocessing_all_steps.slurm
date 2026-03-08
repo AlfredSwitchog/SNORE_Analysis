@@ -1,6 +1,4 @@
 #!/bin/bash
-set -euo pipefail
-
 #SBATCH --job-name=SNORE_preprocessing_all_steps.slurm                  # Job name
 #SBATCH --output=PreProOutput/job_%A_%a.out                             # Output file (%A = job ID, %a = array task ID)
 #SBATCH --error=PreProOutput/job_%A_%a.err                              # Error file
