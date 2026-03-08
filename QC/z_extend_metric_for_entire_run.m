@@ -15,6 +15,11 @@ if ~exist(out_dir,'dir')
     mkdir(out_dir)
 end
 
+% --- add SPM ---
+spm_path    = '/scratch/c7201319/spm12_dev';
+addpath(spm_path)
+
+
 log_file = fullfile(out_dir,'z_extent_QC.txt');
 fid = fopen(log_file,'w');
 
@@ -109,4 +114,12 @@ plot_file = fullfile(out_dir,'z_extent_plot.png');
 saveas(gcf, plot_file);
 
 fclose(fid);
+
+%% save MAT file with volume number + z-extend metric
+
+vol_num = str2double(vol_names);          % column 1
+qc_mat  = [vol_num, z_metric];            % column 2
+
+save(fullfile(out_dir,'z_extent_values.mat'),'qc_mat')
+
 
