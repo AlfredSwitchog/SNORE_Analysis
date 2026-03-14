@@ -4,7 +4,7 @@ set -euo pipefail
 BASE="/scratch/c7201319/SNORE_MR_out"
 
 # ---- SETTINGS ----
-DRYRUN=false  # set to false to actually delete
+DRYRUN=false  # set to true to preview deletions
 # ------------------
 
 for subj_dir in "$BASE"/*; do
@@ -12,10 +12,14 @@ for subj_dir in "$BASE"/*; do
     if [[ -d "$subj_dir" && "$(basename "$subj_dir")" =~ ^[0-9]+$ ]]; then
         
         PREP_DIR="$subj_dir/preprocessing"
+        MEAN_DIR="$subj_dir/meanEPI"
 
+        echo "Processing participant $(basename "$subj_dir")"
+
+        # ----------------------------
+        # Delete preprocessing folder contents
+        # ----------------------------
         if [[ -d "$PREP_DIR" ]]; then
-            echo "Processing participant $(basename "$subj_dir")"
-            
             if $DRYRUN; then
                 echo "  [DRY RUN] Would delete contents of: $PREP_DIR"
                 find "$PREP_DIR" -mindepth 1
@@ -24,9 +28,22 @@ for subj_dir in "$BASE"/*; do
                 rm -rf "${PREP_DIR:?}/"*
                 rm -rf "${PREP_DIR:?}/".* 2>/dev/null || true
             fi
-            
-            echo ""
         fi
+
+        # ----------------------------
+        # Delete meanEPI files
+        # ----------------------------
+        if [[ -d "$MEAN_DIR" ]]; then
+            if $DRYRUN; then
+                echo "  [DRY RUN] Would delete meanEPI files:"
+                ls "$MEAN_DIR"/mean*.nii "$MEAN_DIR"/rp*.txt 2>/dev/null || true
+            else
+                echo "  Deleting meanEPI files"
+                rm -f "$MEAN_DIR"/mean*.nii "$MEAN_DIR"/rp*.txt 2>/dev/null || true
+            fi
+        fi
+
+        echo ""
     fi
 done
 
