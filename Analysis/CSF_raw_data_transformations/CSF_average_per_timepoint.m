@@ -1,6 +1,6 @@
 %% ========= SETTINGS =========
-input_dir    = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data';
-output_dir   = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Data/Average';
+input_dir    = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/20260322_Raw_Signal';
+output_dir   = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/20260322_Averaged_Signal';
 subject_indices = [];   % [] = process all; e.g., [1] or [3 7] for quick tests
 %% ===========================
 

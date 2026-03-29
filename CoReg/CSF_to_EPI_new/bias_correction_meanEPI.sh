@@ -3,10 +3,10 @@
 BASE="/scratch/c7201319/SNORE_MR_out"
 
 for p in "$BASE"/*; do
-  nifti_dir="$p/nifti_raw"
-  [ -d "$nifti_dir" ] || continue
+  meanEPI_dir="$p/meanEPI"
+  [ -d "$meanEPI_dir" ] || continue
 
-  FUNC_MEAN_IMG=$(ls "$nifti_dir"/mean*.nii 2>/dev/null)
+  FUNC_MEAN_IMG=$(ls "$meanEPI_dir"/mean*.nii 2>/dev/null)
   [ -f "$FUNC_MEAN_IMG" ] || continue
 
   FUNC_N4="$(dirname "$FUNC_MEAN_IMG")/N4_$(basename "$FUNC_MEAN_IMG")"
@@ -20,4 +20,3 @@ for p in "$BASE"/*; do
     -i "$FUNC_MEAN_IMG" \
     -o "$FUNC_N4"
 done
-

@@ -1,3 +1,7 @@
+%% ============== DOCUMENTATION ==============
+%
+% This selectes the first 4 non empty slices
+%
 %% ============== USER SETTINGS ==============
 all_subjects_path = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject_cleaned.mat';
 output_dir        = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Analysis/InflowEffect/Figures/all_individual_figures_cleaned';
