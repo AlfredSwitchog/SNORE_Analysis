@@ -8,7 +8,7 @@ BASE="/scratch/c7201319/SNORE_MR_out"
 QC_BASE="/scratch/c7201319/SNORE_QC"
 
 # === DEFINE PARTICIPANTS HERE (blank-separated list) ===
-PARTICIPANTS="35 36 42"
+PARTICIPANTS="9 10 6 22 14 33 43 32 8 46 64 53 21 66 52 18 23 49 51 20 63 45 57 47 42 41 5 31 35 55"
 
 for pid in $PARTICIPANTS; do
     echo "Processing participant $pid..."
