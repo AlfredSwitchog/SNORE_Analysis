@@ -1,6 +1,6 @@
 % === CONFIG ===
-data_dir = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/20260329_Averaged_Signal';
-out_dir  = '/Users/Richard/Masterabeit_local/SNORE_Plots/20260329_Figures';
+data_dir = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/20260406_Averaged_Signal';
+out_dir  = '/Users/Richard/Masterabeit_local/SNORE_Plots/20260406_Figures';
 
 if ~exist(out_dir, 'dir')
     mkdir(out_dir);

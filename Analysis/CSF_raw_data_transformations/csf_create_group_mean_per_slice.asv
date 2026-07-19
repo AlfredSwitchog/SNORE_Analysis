@@ -16,6 +16,26 @@
 % This preserves all available data without interpolation or truncation,
 % and provides a per-slice group mean time series of maximal length.
 
+% Explanation of mean calculation:
+% This script computes the group-level mean CSF time series for each slice
+% across multiple subjects.
+%
+% Each subject is stored in an individual .mat file, for example:
+%   csf_p5_averaged.mat
+%
+% Each file is expected to contain:
+%   averaged_csf_data
+%
+% averaged_csf_data is a cell array of slices, where each slice contains
+% a 1 x T time series vector. T can differ across subjects.
+%
+% To handle different time series lengths, each slice is padded with NaNs
+% to the maximum length found across subjects. The group mean is then
+% computed with mean(..., 'omitnan'), so only subjects with available data
+% contribute at each timepoint.
+%
+% You can exclude subjects by participant number using exclude_participants.
+
 %% load data
 csf_data = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Merged_Data/csf_mean_per_slice_pre_subject_cleaned.mat';
 load(csf_data)
