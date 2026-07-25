@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-#  build_SNORE_QC.sh
+#  build_SNORE_QC_GM_mask.sh
 #  Assemble a small QC set for selected participants.
 #  Based on build_SNORE_QC_raw_realigned_only.sh, extended to also
 #  copy the binarised GM (c1) mask in functional space.
@@ -18,7 +18,7 @@ set -euo pipefail
 
 # ---------------- CONFIG ----------------
 BASE="/scratch/c7201319/SNORE_MR_out"
-OUT="/scratch/c7201319/SNORE_QC_c1_mask"        # output QC folder (change if desired)
+OUT="/scratch/c7201319/SNORE_QC/SNORE_QC_c1_mask"        # output QC folder (change if desired)
 
 PARTICIPANTS=(33 23 31)
 

@@ -16,9 +16,9 @@ switch lower(env)
         script_dir = '/Users/Richard/Masterabeit_local/SNORE_Analysis/Analysis/CSF_signal_extraction';
     case 'leo5_prod'
         main_dir   = '/scratch/c7201319/SNORE_MR_out';
-        mask_dir   = '/scratch/c7201319/SNORE_CSF_Masks/20260329_CSF_masks';
+        mask_dir   = '/scratch/c7201319/SNORE_CSF_Masks/20260405_SNORE_CSF_masks';
         spm_path   = '/scratch/c7201319/spm12_dev';
-        output_dir = '/scratch/c7201319/SNORE_CSF_Data/20260329_Raw_Signals';
+        output_dir = '/scratch/c7201319/SNORE_CSF_Data/20260406_Raw_Signals';
         script_dir = '/scratch/c7201319/SNORE_Analysis/Analysis/CSF_signal_extraction';
     otherwise
         error('Unknown environment "%s".', env);
