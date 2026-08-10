@@ -30,6 +30,11 @@
 csfDir   = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Sleep_Stage_Segmented/N2';
 gmDir    = '/Users/Richard/Masterabeit_local/SNORE_GM_Data/sleep_stage_segmented/N2';
 outDir   = '/Users/Richard/Masterabeit_local/SNORE_Plots/Cross_Correlaltion/N2/within_epoch';
+
+% Participants to analyse. [] = every participant found in csfDir.
+% Otherwise a list of participant numbers, e.g. [1 10 14 22 30]
+subjects      = [5 8 9 20 22 23 31 32 33 35 43 47];
+
 TR            = 2.5;    % seconds per TR / volume
 maxLagTR      = 5;      % lags -5..+5 TR  (= -12.5 .. +12.5 s)
 nPerm         = 5000;   % within-epoch circular-shift permutations for the null band
@@ -46,11 +51,21 @@ if ~exist(outDir,'dir'); mkdir(outDir); end
 D = dir(fullfile(csfDir, 'csf_p*_N2.mat'));
 assert(~isempty(D), 'No csf_p*_N2.mat in %s', csfDir);
 fprintf('Found %d CSF N2 file(s).\n', numel(D));
+if isempty(subjects)
+    fprintf('Subjects : all found\n');
+else
+    fprintf('Subjects : %s\n', strjoin(string(subjects(:)).', ', '));
+end
 
+seen = [];
 for i = 1:numel(D)
     tok = regexp(D(i).name, 'p(\d+)_N2', 'tokens', 'once');
     if isempty(tok); continue; end
     N = str2double(tok{1});
+
+    % ---- participant selection ----
+    if ~isempty(subjects) && ~ismember(N, subjects); continue; end
+    seen(end+1) = N; %#ok<AGROW>
 
     gmPath = fullfile(gmDir, sprintf('gbold_p%d_N2.mat', N));
     if exist(gmPath, 'file') ~= 2
@@ -59,8 +74,8 @@ for i = 1:numel(D)
 
     Cs = load(fullfile(D(i).folder, D(i).name));
     Gs = load(gmPath);
-    c = double(Cs.n2_signal(:));      % CSF (first slice), concatenated N2 epochs
-    g = double(Gs.n2_signal(:));      % gBOLD (mean_signal), concatenated N2 epochs
+    c = double(concatSignal(Cs, D(i).name));   % CSF (first slice), concatenated epochs
+    g = double(concatSignal(Gs, gmPath));      % gBOLD (mean_signal), concatenated epochs
     n = min(numel(c), numel(g)); c = c(1:n); g = g(1:n);
 
     % ---- epoch boundaries (indices into the concatenated signal) ----
@@ -126,9 +141,26 @@ for i = 1:numel(D)
     fprintf('P%-3d : %d epoch(s); within-epoch neg peak r=%+.3f at %+.1f s (%+d TR); significant=%d -> %s\n', ...
             N, K, rmin, lagsSec(imin), lagsTR(imin), sig(imin), outPng);
 end
+
+% ---- participants requested but not present in csfDir ----
+if ~isempty(subjects)
+    for N = setdiff(subjects(:).', seen)
+        fprintf('P%-3d : no CSF file in %s -> skipped\n', N, csfDir);
+    end
+end
 fprintf('Done.\n');
 
 %% ======================= HELPERS ===========================
+function v = concatSignal(S, src)
+    % Concatenated stage signal. segment_stable_sleep_epochs.m saves it as
+    % stage_signal; the older _N2 script saved it as n2_signal.
+    if     isfield(S, 'stage_signal'); v = S.stage_signal(:);
+    elseif isfield(S, 'n2_signal');    v = S.n2_signal(:);
+    else
+        error('Neither "stage_signal" nor "n2_signal" found in %s', char(src));
+    end
+end
+
 function r = cc_within(g, c, bounds, lagsTR, weightByLength)
     % Lagged Pearson corr computed WITHIN each epoch, then averaged across
     % epochs. r(k) corresponds to lag lagsTR(k); convention corr(g(t),c(t+L)).
