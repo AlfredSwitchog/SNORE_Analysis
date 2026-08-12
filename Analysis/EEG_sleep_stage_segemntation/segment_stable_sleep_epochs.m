@@ -33,6 +33,7 @@ eegDir       = '/Users/Richard/Masterabeit_local/SNORE_EEG/SCORING_files_convert
 
 % Stages to pool into one analysis. COMBINED: a TR qualifies if its
 % label is ANY of these, and epochs may run across stage boundaries.
+%   ["W"]                      -> folder/suffix W
 %   ["NREM2"]                  -> folder/suffix  N2
 %   ["NREM2","NREM3"]          -> folder/suffix  N2_N3
 %   ["NREM1","NREM2","NREM3"]  -> folder/suffix  N1_N2_N3
@@ -40,7 +41,8 @@ targetStages = ["Wake"];
 
 % Participants to analyse. [] = every participant found in signalDir.
 % Otherwise a list of participant numbers, e.g. [1 10 14 22 30]
-subjects     = [5 8 9 20 22 23 31 32 33 35 43 47];
+% For SNORE study: These are the ones with an inflow effect [5 8 9 20 22 23 31 32 33 35 43 47]
+subjects     = [];
 
 minTR        = 36;       % >= 36 TRs (= 90 s) to qualify as a stable epoch
 TR           = 2.5;      % seconds per TR/volume
