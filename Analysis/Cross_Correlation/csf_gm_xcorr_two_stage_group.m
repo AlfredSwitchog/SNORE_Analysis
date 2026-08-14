@@ -34,7 +34,11 @@
 %  Lags never cross an epoch border: every correlation is computed inside
 %  one continuous epoch, on the overlapping window only.
 %
-%  Base MATLAB only - no Statistics Toolbox required.
+%  Requires the Statistics and Machine Learning Toolbox (corr, ttest).
+%  The Benjamini-Hochberg correction is implemented in this file, because
+%  MATLAB's mafdr() needs the Bioinformatics Toolbox and defaults to the
+%  Storey method rather than Benjamini-Hochberg.
+%
 %  1 TR = 1 volume = 2.5 s.
 % ============================================================
 
@@ -488,12 +492,17 @@ end
 
 function st = stage2(Z, alphaFDR)
     % Across-participant inference for ONE condition.
+    % Z is nSubj x nLags, so ttest() tests each COLUMN (each lag) against 0.
     nSubj = size(Z,1);
     st.meanZ = mean(Z, 1);
     st.sdZ   = std(Z, 0, 1);
     st.seZ   = st.sdZ / sqrt(nSubj);
-    st.tStat = st.meanZ ./ st.seZ;
-    st.pRaw  = tTestP(st.tStat, nSubj - 1);
+
+    [~, p, ~, stats] = ttest(Z);        % one-sample t-test per lag
+    st.tStat = stats.tstat;
+    st.pRaw  = p;
+    st.df    = stats.df;
+
     [st.sigFDR, st.pAdj] = fdrBH(st.pRaw, alphaFDR);
     st.meanR = tanh(st.meanZ);
     st.ciLoR = tanh(st.meanZ - st.seZ);
@@ -527,7 +536,7 @@ function [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
             nOv = numel(x);
             if nOv < minOverlapTR; continue; end
 
-            r = pear(x, y);
+            r = corr(x(:), y(:));       % Pearson, Statistics Toolbox
             if ~isfinite(r); continue; end
             r = min(max(r, -0.999999), 0.999999);   % keep atanh finite
             z = atanh(r);
@@ -638,27 +647,13 @@ function v = loadStageSignal(S, src)
     end
 end
 
-function r = pear(x, y)
-    % Pearson correlation, base MATLAB (no toolbox).
-    x = x(:); y = y(:); nn = numel(x);
-    dx = x - sum(x)/nn;  dy = y - sum(y)/nn;
-    d  = sqrt(sum(dx.^2) * sum(dy.^2));
-    if d == 0, r = NaN; else, r = sum(dx.*dy) / d; end
-end
-
-
-%% ======================= STAGE 2 HELPERS =======================
-function p = tTestP(t, df)
-    % Two-sided p-value of a t statistic, without the Statistics Toolbox.
-    % Uses the identity  P(|T|>t) = I_{df/(df+t^2)}(df/2, 1/2),
-    % where I is the regularised incomplete beta function (betainc).
-    p = betainc(df ./ (df + t.^2), df/2, 0.5);
-    p(~isfinite(t)) = NaN;
-end
-
+%% ======================= STAGE 2 HELPER =======================
 function [sig, pAdj] = fdrBH(p, q)
     % Benjamini-Hochberg FDR. Returns the reject mask at level q and the
     % BH-adjusted p-values (monotone, capped at 1).
+    % Implemented here on purpose: MATLAB's mafdr() lives in the
+    % Bioinformatics Toolbox and defaults to the Storey method, not
+    % Benjamini-Hochberg, so it would not match what is reported.
     p = p(:).';  m = numel(p);
     [ps, ord] = sort(p);
 
