@@ -53,7 +53,7 @@ stageLabels = ["N1_N2_N3", "W"];
 
 % Participants to analyse. [] = every participant found in the CSF folder.
 % Otherwise a list of numbers, e.g. [5 8 22 23]
-subjects   = [];
+subjects   = [6 8 14 18 22 23 31 32 35 41 42 43 45 47 49 51 52 55 66];
 
 % With several conditions: restrict to participants that contribute a
 % curve in EVERY condition, so the comparison is within the same people.
@@ -86,7 +86,7 @@ minOverlapTR = 10;   % skip an epoch/lag if fewer samples than this overlap
 %                       keeping only the phase in which blood is leaving.
 %                       Follows Fultz et al. (2019), whose CSF measurement
 %                       can see inflow but not outflow.
-gboldTransform = "negderiv";
+gboldTransform = "none";
 
 % Lag axis orientation FOR THE PLOT ONLY. The computation, the console
 % table and the saved .mat are ALWAYS in this script's own convention and
@@ -98,7 +98,7 @@ dpi          = 200;
 
 % ---- roots (note the different capitalisation of the two data roots) ----
 csfRoot  = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Sleep_Stage_Segmented';
-gmRoot   = '/Users/Richard/Masterabeit_local/SNORE_GM_Data/sleep_stage_segmented';
+gmRoot   = '/Users/Richard/Masterabeit_local/SNORE_GM_Data/sleep_stage_segmented_raw_average';
 plotRoot = '/Users/Richard/Masterabeit_local/SNORE_Plots/Cross_Correlaltion';
 
 %% ---------------- DERIVED PATHS AND LAGS ----------------
@@ -143,6 +143,13 @@ else
 end
 if ~exist(outDir, 'dir'); mkdir(outDir); end
 
+% mirror everything printed below into a .txt next to the figure
+logFile = fullfile(outDir, sprintf('group_xcorr_%s%s_twostage.txt', ...
+                                   transformTag, fileTag));
+diary off;
+if exist(logFile, 'file'); delete(logFile); end
+diary(logFile);
+
 fprintf('\n================ TWO-STAGE GROUP CROSS-CORRELATION ================\n');
 fprintf('Conditions: %s\n', strjoin(stageLabels, ', '));
 fprintf('Lags      : %d..%d TR  (%.1f..%.1f s)\n', ...
@@ -181,8 +188,29 @@ if nCond > 1 && matchSubjects
         S1{k}.subjIDs   = S1{k}.subjIDs(keep);
         S1{k}.Z         = S1{k}.Z(keep,:);
         S1{k}.nEpUsed   = S1{k}.nEpUsed(keep);
+        S1{k}.nVolUsed  = S1{k}.nVolUsed(keep);
     end
 end
+
+%% =====================================================================
+%  DESCRIPTIVES - what actually entered the correlations
+%  These are the numbers quoted in the text, computed explicitly here so
+%  they never have to be read off the per-participant table by hand.
+%  =====================================================================
+fprintf('\n================ DATA ENTERING THE ANALYSIS ================\n');
+fprintf('%-12s %5s %8s %9s %9s %14s\n', ...
+        'condition','n','epochs','volumes','minutes','epochs/subj');
+fprintf('%s\n', repmat('-',1,62));
+for k = 1:nCond
+    ep = S1{k}.nEpUsed(:);  vol = S1{k}.nVolUsed(:);
+    fprintf('%-12s %5d %8d %9d %9.1f  %2.0f (range %d-%d)\n', ...
+            stageLabels(k), numel(S1{k}.subjIDs), sum(ep), sum(vol), ...
+            sum(vol)*TR/60, median(ep), min(ep), max(ep));
+end
+fprintf('%s\n', repmat('-',1,62));
+fprintf(['volumes and minutes count only the samples that entered a\n' ...
+         'correlation, so they already exclude the epoch edges dropped\n' ...
+         'by the derivative transform when one is applied.\n']);
 
 %% =====================================================================
 %  STAGE 2 - inference, per condition
@@ -331,7 +359,8 @@ fprintf('\nPlot   : %s\n', outPng);
 %  =====================================================================
 if saveResults
     results = struct('stage_label',{},'subject_ids',{},'n_subjects',{}, ...
-                     'n_epochs_used',{},'lags_TR',{},'lags_s',{}, ...
+                     'n_epochs_used',{},'n_volumes_used',{}, ...
+                     'lags_TR',{},'lags_s',{}, ...
                      'z_per_subject',{},'r_per_subject',{},'mean_z',{}, ...
                      'se_z',{},'mean_r',{},'ci_lo_r',{},'ci_hi_r',{}, ...
                      't_stat',{},'p_raw',{},'p_fdr',{},'sig_fdr',{}, ...
@@ -348,6 +377,7 @@ if saveResults
             'subject_ids',      S1{k}.subjIDs, ...
             'n_subjects',       S1{k}.nSubj, ...
             'n_epochs_used',    S1{k}.nEpUsed, ...
+            'n_volumes_used',   S1{k}.nVolUsed, ...
             'lags_TR',          lagsTR, ...
             'lags_s',           lagsSec, ...
             'z_per_subject',    S1{k}.Z, ...
@@ -386,7 +416,9 @@ if saveResults
     save(outMat, 'results');
     fprintf('Results: %s\n', outMat);
 end
+fprintf('Log    : %s\n', logFile);
 fprintf('\nDone.\n');
+diary off;
 
 
 %% ======================= CONDITION RUNNERS =======================
@@ -406,7 +438,7 @@ function out = stage1ForCondition(stageLabel, csfRoot, gmRoot, subjects, ...
     fprintf('%-7s %8s %9s %10s   %s\n', 'Subj','#epochs','usedEp','concatTR','status');
     fprintf('%s\n', repmat('-',1,64));
 
-    subjIDs = []; Z = []; nEpUsed = []; seen = [];
+    subjIDs = []; Z = []; nEpUsed = []; nVolUsed = []; seen = [];
 
     for i = 1:numel(D)
         tok = regexp(D(i).name, 'p(\d+)_', 'tokens', 'once');
@@ -434,8 +466,8 @@ function out = stage1ForCondition(stageLabel, csfRoot, gmRoot, subjects, ...
         bounds = epochBounds(Cs.epochs, n);
         checkEpochsMatch(Cs.epochs, Gs.epochs, N);
 
-        [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
-                                       epochWeighting, TR, gboldTransform);
+        [zSubj, nUsed, nVol] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
+                                             epochWeighting, TR, gboldTransform);
 
         if nUsed == 0
             fprintf('P%-6d %8d %9d %10d   %s\n', N, size(bounds,1), 0, n, ...
@@ -443,9 +475,10 @@ function out = stage1ForCondition(stageLabel, csfRoot, gmRoot, subjects, ...
             continue
         end
 
-        subjIDs(end+1) = N;      %#ok<AGROW>
-        Z(end+1,:)     = zSubj;  %#ok<AGROW>
-        nEpUsed(end+1) = nUsed;  %#ok<AGROW>
+        subjIDs(end+1)  = N;      %#ok<AGROW>
+        Z(end+1,:)      = zSubj;  %#ok<AGROW>
+        nEpUsed(end+1)  = nUsed;  %#ok<AGROW>
+        nVolUsed(end+1) = nVol;   %#ok<AGROW>
 
         fprintf('P%-6d %8d %9d %10d   %s\n', N, size(bounds,1), nUsed, n, '');
     end
@@ -463,7 +496,7 @@ function out = stage1ForCondition(stageLabel, csfRoot, gmRoot, subjects, ...
         if any(bad)
             warning('%s: dropping %d participant(s) with an incomplete z-curve: %s', ...
                     stageLabel, sum(bad), strjoin("P" + string(subjIDs(bad)), ', '));
-            Z(bad,:) = []; subjIDs(bad) = []; nEpUsed(bad) = [];
+            Z(bad,:) = []; subjIDs(bad) = []; nEpUsed(bad) = []; nVolUsed(bad) = [];
         end
     end
 
@@ -471,7 +504,7 @@ function out = stage1ForCondition(stageLabel, csfRoot, gmRoot, subjects, ...
     fprintf('Stage 1 done: %d participant(s) contribute a z-curve.\n', numel(subjIDs));
 
     out = struct('stageLabel',stageLabel, 'csfDir',csfDir, 'gmDir',gmDir, ...
-                 'subjIDs',subjIDs, 'Z',Z, 'nEpUsed',nEpUsed);
+                 'subjIDs',subjIDs, 'Z',Z, 'nEpUsed',nEpUsed, 'nVolUsed',nVolUsed);
 end
 
 function name = prettyStageName(stageLabel)
@@ -511,8 +544,8 @@ end
 
 
 %% ======================= STAGE 1 HELPERS =======================
-function [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
-                                        weighting, TR, gboldTransform)
+function [zSubj, nUsed, nVol] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
+                                              weighting, TR, gboldTransform)
     % One participant -> one Fisher-z value per lag.
     % Every correlation is computed INSIDE one epoch, on the overlapping
     % window only, so a lag never mixes samples across an epoch border.
@@ -520,6 +553,7 @@ function [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
     acc  = zeros(1, nL);        % sum of  w * z
     wsum = zeros(1, nL);        % sum of  w
     used = false(size(bounds,1), 1);
+    vol  = zeros(size(bounds,1), 1);    % volumes each epoch contributes
 
     for e = 1:size(bounds,1)
         a = bounds(e,1); b = bounds(e,2);
@@ -529,6 +563,7 @@ function [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
         % derivative never spans a concatenation join
         [ge, ce] = applyGboldTransform(ge, ce, gboldTransform, TR);
         if numel(ge) < minOverlapTR; continue; end
+        vol(e) = numel(ge);             % length after any trimming
 
         for k = 1:nL
             L = lagsTR(k);
@@ -554,6 +589,7 @@ function [zSubj, nUsed] = subjectZCurve(g, c, bounds, lagsTR, minOverlapTR, ...
     zSubj = acc ./ wsum;            % weighted mean Fisher-z per lag
     zSubj(wsum == 0) = NaN;
     nUsed = sum(used);
+    nVol  = sum(vol(used));         % volumes in the epochs that contributed
 end
 
 function [ge, ce] = applyGboldTransform(ge, ce, mode, TR)

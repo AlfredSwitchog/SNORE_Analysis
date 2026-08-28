@@ -1,7 +1,8 @@
 %% ============================================================
 %  FIGURE 2 - stable epochs available for analysis
 %  ------------------------------------------------------------
-%  2.1  distribution of stable epoch durations, NREM total vs Wake
+%  2.1  distribution of stable epoch durations, NREM total vs Wake,
+%       shown as side-by-side bars in each duration bin
 %  2.2  number of stable epochs per participant
 %
 %  A stable epoch is a run of consecutive volumes in the target stages
@@ -11,17 +12,17 @@
 
 %% ---------------- CONFIG ----------------
 eegDir   = '/Users/Richard/Masterabeit_local/SNORE_EEG/SCORING_files_converted_to_fMRI';
-outDir   = fullfile(eegDir, '_overview');
+outDir   = '/Users/Richard/Masterabeit_local/SNORE_Plots/EEG_Plots/descriptive_statistics';
 TR       = 2.5;
 minTR    = 36;           % >= 36 volumes = 90 s
 
-group    = "all";        % "all" = every scored participant | "subgroup" = low-motion only
+group    = "subgroup";   % "all" = full cohort | "subgroup" = low motion only
 
 subgroup = [6 8 14 18 20 21 22 23 31 32 33 35 41 42 43 45 47 49 51 52 53 55 57 63 64 66];
-inflow   = [5 8 9 20 22 23 31 32 33 35 43 47];
 
 NREM     = ["NREM1","NREM2","NREM3"];    % "NREM total"
 WAKE     = "Wake";
+binWidth = 2.5;                          % minutes per histogram bin
 colN     = [0.20 0.42 0.68];             % blue   - NREM total
 colW     = [0.85 0.55 0.20];             % orange - Wake
 dpi      = 200;
@@ -50,49 +51,45 @@ fprintf('NREM total : %d epochs, median %.1f min (range %.1f-%.1f)\n', ...
         numel(durN), median(durN), min(durN), max(durN));
 fprintf('Wake       : %d epochs, median %.1f min (range %.1f-%.1f)\n', ...
         numel(durW), median(durW), min(durW), max(durW));
-fprintf('epochs per participant: NREM median %.0f, Wake median %.0f\n', ...
-        median(cntN), median(cntW));
+fprintf('epochs per participant: NREM median %.0f (range %d-%d), Wake median %.0f (range %d-%d)\n', ...
+        median(cntN), min(cntN), max(cntN), median(cntW), min(cntW), max(cntW));
 fprintf('participants with no stable NREM epoch: %d\n\n', sum(cntN == 0));
 
 %% ---------------- PLOT ----------------
 fig = figure('Color','w', 'Position',[100 100 1020 max(420, 14*nS + 160)]);
 
-% ---- 2.1 duration distribution ----
-subplot(1,2,1); hold on;
-edges = 0:2.5:max([durN, durW, 10]) + 2.5;
-histogram(durN, edges, 'FaceColor',colN, 'FaceAlpha',0.55, 'EdgeColor','none', ...
-          'DisplayName', sprintf('NREM total (%d epochs)', numel(durN)));
-histogram(durW, edges, 'FaceColor',colW, 'FaceAlpha',0.55, 'EdgeColor','none', ...
-          'DisplayName', sprintf('Wake (%d epochs)', numel(durW)));
-xline(minTR*TR/60, 'k:', 'HandleVisibility','off');       % the 90 s cut-off
-hold off;
+% ---- 2.1 duration distribution, side-by-side bars ----
+subplot(1,2,1);
+edges   = 0:binWidth:(max([durN, durW]) + binWidth);
+centers = edges(1:end-1) + binWidth/2;
+cN = histcounts(durN, edges);
+cW = histcounts(durW, edges);
+b = bar(centers, [cN(:), cW(:)], 'grouped', 'EdgeColor','none', 'BarWidth',1);
+b(1).FaceColor = colN;  b(2).FaceColor = colW;
 xlabel('Epoch duration (min)'); ylabel('Number of epochs');
 title('2.1  Stable epoch durations');
-legend('Location','northeast', 'Box','off'); box on;
+legend({sprintf('NREM total (%d epochs)', numel(durN)), ...
+        sprintf('Wake (%d epochs)',       numel(durW))}, ...
+       'Location','northeast', 'Box','off');
+box on;
 
 % ---- 2.2 epochs per participant ----
 subplot(1,2,2);
 [~, ord] = sort(cntN);                      % sort by NREM count
-barh(1:nS, [cntN(ord), cntW(ord)], 'grouped', 'EdgeColor','none');
-colororder([colN; colW]);
+b2 = barh(1:nS, [cntN(ord), cntW(ord)], 'grouped', 'EdgeColor','none');
+b2(1).FaceColor = colN;  b2(2).FaceColor = colW;
 
-lbl = strings(nS,1);
-for i = 1:nS
-    k = ord(i); mark = "";
-    if ismember(S(k).id, subgroup); mark = mark + " *"; end
-    if ismember(S(k).id, inflow);   mark = mark + "+";  end
-    lbl(i) = "P" + string(S(k).id) + mark;
-end
+lbl = "P" + string([S(ord).id]');
 yticks(1:nS); yticklabels(lbl);
 set(gca, 'TickLabelInterpreter','none', 'FontSize',8);
 ylim([0.5 nS+0.5]);
-xlabel('Number of stable epochs');
-ylabel('Participant   ( * low-motion subgroup,  + inflow effect )');
+xlabel('Number of stable epochs'); ylabel('Participant');
 title('2.2  Stable epochs per participant');
-legend({'NREM total','Wake'}, 'Location','southeast', 'Box','off'); box on;
+legend({'NREM total','Wake'}, 'Location','southeast', 'Box','off');
+box on;
 
-sgtitle(sprintf('Stable epochs of at least %.0f s  (group = %s, n = %d)', ...
-                minTR*TR, group, nS));
+sgtitle(sprintf('Stable epochs of at least %.0f s  (%s, n = %d)', ...
+                minTR*TR, groupName(group), nS));
 
 %% ---------------- SAVE ----------------
 if ~exist(outDir, 'dir'); mkdir(outDir); end
@@ -103,3 +100,9 @@ catch
     print(fig, outPng, '-dpng', sprintf('-r%d', dpi));
 end
 fprintf('Saved: %s\n', outPng);
+
+
+%% ======================= HELPER =======================
+function s = groupName(g)
+    if g == "subgroup"; s = 'low-motion subgroup'; else; s = 'full cohort'; end
+end
