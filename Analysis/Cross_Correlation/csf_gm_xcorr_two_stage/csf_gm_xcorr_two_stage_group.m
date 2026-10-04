@@ -49,7 +49,7 @@
 %   TWO or more -> all curves in one figure, saved under multi_stage
 % The FIRST entry is treated as the primary condition (it gets the peak
 % annotation and is drawn on top).
-stageLabels = ["N1_N2_N3", "W"];
+stageLabels = ["N1", "W"];
 
 % Participants to analyse. [] = every participant found in the CSF folder.
 % Otherwise a list of numbers, e.g. [5 8 22 23]
@@ -98,7 +98,7 @@ dpi          = 200;
 
 % ---- roots (note the different capitalisation of the two data roots) ----
 csfRoot  = '/Users/Richard/Masterabeit_local/SNORE_CSF_Data/Sleep_Stage_Segmented';
-gmRoot   = '/Users/Richard/Masterabeit_local/SNORE_GM_Data/sleep_stage_segmented_raw_average';
+gmRoot   = '/Users/Richard/Masterabeit_local/SNORE_GM_Data/sleep_stage_segmented';
 plotRoot = '/Users/Richard/Masterabeit_local/SNORE_Plots/Cross_Correlaltion';
 
 %% ---------------- DERIVED PATHS AND LAGS ----------------
