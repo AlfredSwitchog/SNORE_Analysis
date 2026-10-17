@@ -9,9 +9,11 @@ end
 subj_dirs = dir(base_dir);
 
 % -------------------------------
-% First pass: find global max abs Trans_Z across all participants
+% First pass: common y-axis range across all participants
 % -------------------------------
-global_max_abs_z = 0;
+range_thresh = 5;   % inclusion criterion: max(Trans_Z) - min(Trans_Z) must be <= range_thresh (mm)
+y_lo =  Inf;
+y_hi = -Inf;
 
 for i = 1:numel(subj_dirs)
     subj_name = subj_dirs(i).name;
@@ -34,16 +36,18 @@ for i = 1:numel(subj_dirs)
         rp = load(rp_path);
         
         trans_z = rp(:,3);
-        subj_max_abs_z = max(abs(trans_z));
+        z_min = min(trans_z);
+        z_max = max(trans_z);
         
-        if subj_max_abs_z > global_max_abs_z
-            global_max_abs_z = subj_max_abs_z;
-        end
+        % axis must show both the trace and the inclusion band [min, min + range_thresh]
+        y_lo = min(y_lo, z_min);
+        y_hi = max(y_hi, max(z_max, z_min + range_thresh));
     end
 end
 
-% Define common y-axis limits symmetrically around zero
-y_limits = [-global_max_abs_z, global_max_abs_z];
+% Common y-axis limits across participants (5% margin)
+pad = 0.05 * (y_hi - y_lo);
+y_limits = [y_lo - pad, y_hi + pad];
 
 % -------------------------------
 % Second pass: create plots with common y-axis
@@ -75,13 +79,17 @@ for i = 1:numel(subj_dirs)
         plot(vol_idx, trans_z, 'k', 'LineWidth', 1);
         hold on
         
-        % Visual guide lines
-        yline(5, '--r', 'LineWidth', 1);
-        yline(-5, '--r', 'LineWidth', 1);
+        % Inclusion band: Trans_Z range (max - min) must not exceed range_thresh
+        z_min    = min(trans_z);
+        z_range  = max(trans_z) - z_min;
+        included = z_range <= range_thresh;
+        yline(z_min, '--r', 'min', 'LineWidth', 1);
+        yline(z_min + range_thresh, '--r', sprintf('min + %g mm', range_thresh), 'LineWidth', 1);
         
         xlabel('Volume');
         ylabel('Trans Z (mm)');
-        title(sprintf('Participant %s: Trans Z', subj_name));
+        if included, status = 'included'; else, status = 'EXCLUDED'; end
+        title(sprintf('Participant %s: Trans Z (range = %.2f mm, %s)', subj_name, z_range, status));
         ylim(y_limits);
         grid on;
         

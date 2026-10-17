@@ -4,7 +4,8 @@
 #  Input : coupling_long.csv   (written by export_lmm_long.m)
 #  Model : z ~ stage + (1 | subject), fitted at one lag
 #
-#  Run section by section. Output also goes to lmm_output.txt.
+#  Run section by section. Output also goes to lmm_output.txt, where every
+#  block is labelled "-- ... --" so a number can be traced back to a section.
 #  If you abort partway and the console goes quiet, run  sink()  once.
 ## =========================================================================
 
@@ -23,6 +24,7 @@ outDir <- dirname(csv)
 LAG         <- -5.0            # primary lag, matches the paired NREM-vs-W test
 LAG_COMPARE <- c(-7.5, -2.5)   # neighbours, for the sensitivity check in section 9
 
+while (sink.number() > 0) sink()   # close anything an aborted run left open
 sink(file.path(outDir, "lmm_output.txt"), split = TRUE)
 
 
@@ -43,30 +45,36 @@ cat("rows       :", nrow(d), "\n\n")
 #  so a random intercept is the only random effect the data can support.
 
 dL <- subset(d, lag_s == LAG)
-cat(sprintf("lag %+.1f s: %d rows, %d participants\n\n",
-            LAG, nrow(dL), nlevels(dL$subject)))
+cat(sprintf("lag %+.1f s: %d rows, %d participants\n", LAG, nrow(dL),
+            nlevels(dL$subject)))
 
 
 ## 4. Descriptives and missing cells --------------------------------------
 #  N3 is missing in the participants who never reached N3. The model handles
 #  the unbalance; it does not make those participants comparable.
 
+cat("\n-- descriptives by stage --\n")
 print(data.frame(n       = tapply(dL$z,       dL$stage, length),
                  minutes = round(tapply(dL$minutes, dL$stage, sum)),
                  mean_r  = round(tapply(dL$r,       dL$stage, mean), 3)))
 
-print(table(dL$subject, dL$stage))     # 0 marks a missing cell
+cat("\n-- cells per participant (0 = stage not reached) --\n")
+print(table(dL$subject, dL$stage))
 
 
 ## 5. Primary model -------------------------------------------------------
 
 m <- lmer(z ~ stage + (1 | subject), data = dL)
 
+cat("\n-- omnibus: effect of stage --\n")
 print(anova(m, ddf = "Kenward-Roger"))
+
+cat("\n-- model summary: variance components and coefficients --\n")
 print(summary(m, ddf = "Kenward-Roger"))
 
 v <- as.data.frame(VarCorr(m))
-cat("\nICC:", round(v$vcov[1] / sum(v$vcov), 3), "\n\n")
+cat("\n-- ICC --\n")
+cat("between-participant share of variance:", round(v$vcov[1] / sum(v$vcov), 3), "\n")
 
 
 ## 6. Planned contrasts ---------------------------------------------------
@@ -81,7 +89,10 @@ ctr <- contrast(em, list("N1 - W"  = c(-1, 1, 0,  0),
                          "N2 - N3" = c( 0, 0, 1, -1)),
                 adjust = "mvt")
 
+cat("\n-- marginal means by stage (Fisher z) --\n")
 print(em)
+
+cat("\n-- planned contrasts, mvt-adjusted across 4 --\n")
 print(summary(ctr, infer = TRUE))      # more negative = stronger coupling
 
 
@@ -90,8 +101,9 @@ print(summary(ctr, infer = TRUE))      # more negative = stronger coupling
 #  equally spaced levels, so a significant quadratic means "inverted U across
 #  the ordered sequence", not a curve on a metric axis.
 
-ctr_poly <- contrast(em, "poly", adjust = "none")
-print(ctr_poly)
+#cat("\n-- polynomial trends over W < N1 < N2 < N3 --\n")
+#ctr_poly <- contrast(em, "poly", adjust = "none")
+#print(ctr_poly)
 
 
 ## 8. Sensitivity: inverse-variance weights -------------------------------
@@ -103,8 +115,13 @@ dL$w <- (dL$n_volumes - 3) / mean(dL$n_volumes - 3)
 m_w  <- lmer(z ~ stage + (1 | subject), data = dL, weights = w)
 em_w <- emmeans(m_w, ~ stage, lmer.df = "kenward-roger")
 
+cat("\n-- weighted: omnibus --\n")
 print(anova(m_w, ddf = "Kenward-Roger"))
+
+cat("\n-- weighted: marginal means --\n")
 print(em_w)
+
+cat("\n-- weighted: planned contrasts --\n")
 print(contrast(em_w, list("N1 - W"  = c(-1, 1, 0,  0),
                           "N2 - W"  = c(-1, 0, 1,  0),
                           "N3 - W"  = c(-1, 0, 0,  1),
@@ -114,6 +131,7 @@ print(contrast(em_w, list("N1 - W"  = c(-1, 1, 0,  0),
 
 ## 9. Sensitivity: neighbouring lags --------------------------------------
 
+cat("\n-- lag sensitivity --\n")
 for (L in sort(c(LAG, LAG_COMPARE))) {
   dd <- subset(d, lag_s == L)
   mm <- lmer(z ~ stage + (1 | subject), data = dd)
@@ -123,7 +141,6 @@ for (L in sort(c(LAG, LAG_COMPARE))) {
   cat(sprintf("lag %+5.1f s   stage F = %5.2f, p = %.1e   quadratic p = %.1e\n",
               L, a$`F value`, a$`Pr(>F)`, q$p.value[q$contrast == "quadratic"]))
 }
-cat("\n")
 
 
 ## 10. Diagnostics --------------------------------------------------------
@@ -134,14 +151,19 @@ plot(fitted(m), resid(m), xlab = "fitted", ylab = "residual"); abline(h = 0, lty
 qqnorm(resid(m)); qqline(resid(m))
 par(mfrow = c(1, 1))
 
-print(round(tapply(resid(m), dL$stage, sd), 3))
+sdStage <- tapply(resid(m), dL$stage, sd)
+cat("\n-- residual SD by stage (model assumes these are equal) --\n")
+print(round(sdStage, 3))
+cat("ratio max/min:", round(max(sdStage) / min(sdStage), 2), "\n")
+
+cat("\n-- normality of residuals --\n")
 print(shapiro.test(resid(m)))
 
 
 ## 11. Write and close ----------------------------------------------------
 
-write.csv(as.data.frame(em),       file.path(outDir, "emmeans.csv"),        row.names = FALSE)
-write.csv(as.data.frame(ctr),      file.path(outDir, "contrasts_planned.csv"), row.names = FALSE)
-write.csv(as.data.frame(ctr_poly), file.path(outDir, "contrasts_poly.csv"), row.names = FALSE)
+write.csv(as.data.frame(em),  file.path(outDir, "emmeans.csv"),           row.names = FALSE)
+write.csv(as.data.frame(ctr), file.path(outDir, "contrasts_planned.csv"), row.names = FALSE)
+#write.csv(as.data.frame(ctr_poly), file.path(outDir, "contrasts_poly.csv"), row.names = FALSE)
 
 sink()

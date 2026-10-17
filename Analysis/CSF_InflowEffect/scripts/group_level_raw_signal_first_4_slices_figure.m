@@ -2,9 +2,14 @@
 %  Group mean raw CSF signal in the four bottom slices
 %  ------------------------------------------------------------
 %  PLOTTING ONLY. The group mean is computed and saved by
-%     CSF_raw_data_transformations/csf_create_group_mean_per_slice.m
+%     CSF_raw_data_transformations/csf_create_group_mean_per_slice.m          (raw)
+%     CSF_raw_data_transformations/csf_create_group_mean_per_slice_zscored.m  (z-scored)
 %  and is only loaded here, so that re-running this script can never
-%  change the underlying average.
+%  change the underlying average. signalType selects which one is plotted.
+%
+%  Note on the z-scored version: each participant's slices are z-scored
+%  separately, so all slices have SD 1 per participant and the amplitude
+%  gradient between slices is removed by construction.
 %
 %  Expected inflow signature: slice 1 sits at the bottom of the imaging
 %  volume and shows the largest fluctuations, decaying upwards.
@@ -13,9 +18,17 @@
 clear; clc;
 
 %% ---------------- CONFIG ----------------
-% Group mean file written by csf_create_group_mean_per_slice.m
-groupMeanFile = ['/Users/Richard/Masterabeit_local/SNORE_CSF_Data/' ...
-              '20260813_Group_Average/csf_group_mean_per_slice.mat'];
+% Which group mean enters the plot
+signalType = "zscore";   % "raw" | "zscore"
+
+% Group mean files
+%   raw    : written by csf_create_group_mean_per_slice.m
+%   zscore : written by csf_create_group_mean_per_slice_zscored.m
+%            (folder date = day that script was run; adjust if needed)
+groupMeanFileRaw = ['/Users/Richard/Masterabeit_local/SNORE_CSF_Data/' ...
+                    '20260813_Group_Average/csf_group_mean_per_slice.mat'];
+groupMeanFileZ   = ['/Users/Richard/Masterabeit_local/SNORE_CSF_Data/' ...
+                    '20261011_Group_Average/csf_group_mean_per_slice_zscored.mat'];
 
 timeUnit = "min";     % "min" | "s" | "vol"   -> x-axis of the figure
 
@@ -26,15 +39,35 @@ plotRoot = '/Users/Richard/Masterabeit_local/SNORE_Plots/Inflow_Effect';
 dpi      = 200;
 
 % Figures go to   <plotRoot>/<yyyymmdd>_Figures/<subfolder>/<file>.png
-subDirMean         = 'group_level_raw_signal';
-fileMean           = 'group_level_raw_csf_signal.png';
+subDirMeanRaw      = 'group_level_raw_signal';
+fileMeanRaw        = 'group_level_raw_csf_signal.png';
+subDirMeanZ        = 'group_level_raw_signal_zscored';
+fileMeanZ          = 'group_level_raw_csf_signal_zscored.png';
 subDirContributors = 'group_level_contributing_participants';
 fileContributors   = 'group_level_contributing_participants.png';
+
+%% ---------------- SIGNAL TYPE ----------------
+switch string(signalType)
+    case "raw"
+        groupMeanFile = groupMeanFileRaw;
+        producer      = 'csf_create_group_mean_per_slice.m';
+        subDirMean    = subDirMeanRaw;   fileMean = fileMeanRaw;
+        ylab          = 'Group mean CSF signal (a.u.)';
+        ttl           = 'Group mean raw CSF signal per slice';
+    case "zscore"
+        groupMeanFile = groupMeanFileZ;
+        producer      = 'csf_create_group_mean_per_slice_zscored.m';
+        subDirMean    = subDirMeanZ;     fileMean = fileMeanZ;
+        ylab          = 'Group mean CSF signal (z)';
+        ttl           = 'Group mean z-scored CSF signal per slice';
+    otherwise
+        error('signalType must be "raw" or "zscore", got "%s".', signalType);
+end
 
 %% ---------------- LOAD ----------------
 assert(exist(groupMeanFile, 'file') == 2, ...
        ['Group mean file not found:\n  %s\n' ...
-        'Run csf_create_group_mean_per_slice.m first.'], groupMeanFile);
+        'Run %s first.'], groupMeanFile, producer);
 
 L = load(groupMeanFile, 'group_mean');
 G = L.group_mean;
@@ -48,7 +81,8 @@ TR           = G.TR;
 outDir = fullfile(plotRoot, ...
                   sprintf('%s_Figures', char(datetime('now','Format','yyyyMMdd'))));
 
-fprintf('\nGroup mean file : %s\n', groupMeanFile);
+fprintf('\nSignal type     : %s\n', signalType);
+fprintf('Group mean file : %s\n', groupMeanFile);
 fprintf('Created         : %s\n', G.created);
 fprintf('Participants    : %d\n', nSub);
 fprintf('Output          : %s\n\n', outDir);
@@ -77,8 +111,8 @@ for s = 1:nSlice
 end
 hold(ax1,'off');
 xlabel(ax1, xlab);
-ylabel(ax1, 'Group mean CSF signal (a.u.)');
-title(ax1, sprintf('Group mean raw CSF signal per slice  (n = %d)', nSub));
+ylabel(ax1, ylab);
+title(ax1, sprintf('%s  (n = %d)', ttl, nSub));
 legend(ax1, 'Location','northeast', 'Box','off');
 grid(ax1,'off'); xlim(ax1, [t(1) t(end)]);
 
